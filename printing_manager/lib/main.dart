@@ -17,11 +17,118 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
       ),
-      home: const DashboardScreen(),
+      home: const LoginScreen(),
     );
   }
 }
 
+// LoginScreen
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> login() async {
+    try {
+      // Sending the username and password to PHP API
+      final response = await http.post(
+        Uri.parse('http://localhost/printing_api/login.php'),
+        body: {
+          'username': usernameController.text,
+          'password': passwordController.text,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        // If PHP says success is true, it directs to the dashboard
+        if (data['success'] == true) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          );
+        } else {
+          // If PHP says false, it will show the error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'])),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Database connection error! Is XAMPP running?')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      body: Center(
+        child: Container(
+          width: 400,
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.lock_outline, size: 64, color: Colors.indigo),
+              const SizedBox(height: 16),
+              const Text('Admin Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 32),
+              TextField(
+                controller: usernameController,
+                decoration: InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo[800],
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: login,
+                  child: const Text('Login', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+// Dashboard Screen
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -106,7 +213,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // --- UI DIALOG ---
+  // UI Dialog
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController docController = TextEditingController();
@@ -148,14 +255,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: colorController,
+
+              // Dropdown for Color Type
+              DropdownButtonFormField<String>(
+                value: colorController.text.isEmpty ? null : colorController.text,
+                hint: const Text('Select color type...'),
                 decoration: InputDecoration(
-                  labelText: 'Color Type',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
+               labelText: 'Color Type',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
+              items: const [
+                DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
+                DropdownMenuItem(value: 'Colored', child: Text('Colored')),
+              ],
+                onChanged: (String? newValue) {
+                  setState(() {
+                    colorController.text = newValue!;
+                  });
+                },
+              ),  
               const SizedBox(height: 16),
+
+              // Price input
               TextField(
                 controller: priceController,
                 decoration: InputDecoration(
@@ -164,21 +285,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: orderStatus,
-                decoration: InputDecoration(
-                  labelText: 'Order Status',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Pending', child: Text('Pending')),
-                  DropdownMenuItem(value: 'Printing', child: Text('Printing')),
-                  DropdownMenuItem(value: 'Done', child: Text('Done')),
-                ],
-                onChanged: (val) {
-                  if (val != null) orderStatus = val;
-                },
-              ),
             ],
           ),
         ),
@@ -208,18 +314,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // --- MAIN UI ---
+  // Main Dashboard UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-          '🖨️ Printing Services Dashboard',
+          'Printing Services Dashboard',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.indigo[800],
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Logout',
+            onPressed: () {
+              // Sends back to the Login Screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            },
+          ),
+          const SizedBox(width: 16),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -235,7 +355,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        // LayoutBuilder helps the DataTable stretch properly without crashing!
+                        // LayoutBuilder helps the DataTable stretch properly without crashing
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             return SingleChildScrollView(
@@ -250,6 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       DataColumn(label: Text('Customer', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Document', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Pages', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Color', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Price', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -260,7 +381,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           DataCell(Text(order['customer_name'].toString())),
                                           DataCell(Text(order['document_type'].toString())),
                                           DataCell(Text(order['page_count'].toString())),
-                                          // Here is your official Peso sign!
+                                          DataCell(Text(order['color_type'].toString())),
+                                          // Peso sign
                                           DataCell(Text('₱ ${order['total_price']}')),
                                           DataCell(
                                             DropdownButton<String>(
@@ -324,12 +446,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.indigo[800],
         foregroundColor: Colors.white,
         onPressed: showCreateOrderDialog,
-        icon: const Icon(Icons.add),
-        label: const Text("New Order", style: TextStyle(fontWeight: FontWeight.bold)),
+        child: const Icon(Icons.add),
       ),
     );
   }
