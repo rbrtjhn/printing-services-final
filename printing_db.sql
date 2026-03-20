@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 13, 2026 at 06:08 AM
+-- Generation Time: Mar 20, 2026 at 06:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -30,6 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `tbl_orders` (
   `order_id` int(11) NOT NULL,
   `customer_name` varchar(100) NOT NULL,
+  `service_type` varchar(50) NOT NULL,
   `document_type` varchar(50) NOT NULL,
   `page_count` int(11) NOT NULL,
   `color_type` varchar(20) NOT NULL,
@@ -42,8 +43,28 @@ CREATE TABLE `tbl_orders` (
 -- Dumping data for table `tbl_orders`
 --
 
-INSERT INTO `tbl_orders` (`order_id`, `customer_name`, `document_type`, `page_count`, `color_type`, `total_price`, `order_status`, `order_date`) VALUES
-(3, 'Robert', 'Solicitation', 3, 'Black & White', 15.00, 'Printing', '2026-03-09 04:43:56');
+INSERT INTO `tbl_orders` (`order_id`, `customer_name`, `service_type`, `document_type`, `page_count`, `color_type`, `total_price`, `order_status`, `order_date`) VALUES
+(12, 'Rose', 'Print', 'DTR', 1, 'Colored', 5.00, 'Done', '2026-03-20 04:29:16'),
+(13, 'Gloria', 'Xerox', 'ID', 2, 'Black & White', 4.00, 'Done', '2026-03-20 04:49:49');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `username`, `password`) VALUES
+(1, 'rjotojot19', 'Rjotojot704');
 
 --
 -- Indexes for dumped tables
@@ -56,6 +77,12 @@ ALTER TABLE `tbl_orders`
   ADD PRIMARY KEY (`order_id`);
 
 --
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -63,7 +90,13 @@ ALTER TABLE `tbl_orders`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
