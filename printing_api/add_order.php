@@ -7,17 +7,19 @@ include "connection.php";
 
 // Get the data sent from Flutter
 $customer_name = $_POST['customer_name'];
+$service_type  = $_POST['service_type'];
 $document_type = $_POST['document_type'];
-$page_count = $_POST['page_count'];
-$color_type = $_POST['color_type'];
-$total_price = $_POST['total_price'];
+$page_count    = $_POST['page_count'];
+$color_type    = $_POST['color_type'];
+$total_price   = $_POST['total_price'];
 
 // Insert it into the database
-$sql = "INSERT INTO tbl_orders (customer_name, document_type, page_count, color_type, total_price, order_status) 
-        VALUES (:customer_name, :document_type, :page_count, :color_type, :total_price, 'Pending')";
+$sql = "INSERT INTO tbl_orders (customer_name, service_type, document_type, page_count, color_type, total_price, order_status) 
+        VALUES (:customer_name, :service_type, :document_type, :page_count, :color_type, :total_price, 'Pending')";
 
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(":customer_name", $customer_name);
+$stmt->bindParam(":service_type", $service_type);
 $stmt->bindParam(":document_type", $document_type);
 $stmt->bindParam(":page_count", $page_count);
 $stmt->bindParam(":color_type", $color_type);
@@ -28,7 +30,4 @@ if ($stmt->execute()) {
 } else {
     echo json_encode(["status" => "error", "message" => "Failed to add order."]);
 }
-
-$status = "Pending"; // Automatically set every new order to Pending
-
 ?>

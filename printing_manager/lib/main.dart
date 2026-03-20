@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       // Sending the username and password to PHP API
       final response = await http.post(
-        Uri.parse('http://localhost/printing_api/login.php'),
+        Uri.parse('http://localhost/printing-services-final/printing_api/login.php'),
         body: {
           'username': usernameController.text,
           'password': passwordController.text,
@@ -146,10 +146,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     fetchOrders();
   }
 
-  // --- API FUNCTIONS ---
+  // API Functions
   Future<void> fetchOrders() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/printing_api/get_orders.php'));
+      final response = await http.get(Uri.parse('http://localhost/printing-services-final/printing_api/get_orders.php'));
       if (response.statusCode == 200) {
         setState(() {
           orders = json.decode(response.body);
@@ -161,32 +161,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> createOrder(String name, String docType, String pages, String color, String price, String status) async {
+  // The HTTP POST Function
+  Future<void> createOrder(
+    String customerName,
+    String serviceType,
+    String documentType,
+    String pageCount,
+    String colorType,
+    String totalPrice,
+    String orderStatus,
+  ) async {
+  
+
+    var url = Uri.parse('http://localhost/printing-services-final/printing_api/add_order.php'); 
+
     try {
-      final response = await http.post(
-        Uri.parse('http://localhost/printing_api/add_order.php'),
+      var response = await http.post(
+        url,
         body: {
-          'customer_name': name,
-          'document_type': docType,
-          'page_count': pages,
-          'color_type': color,
-          'total_price': price,
-          'order_status': status,
+          "customer_name": customerName,
+          "service_type": serviceType,
+          "document_type": documentType,
+          "page_count": pageCount,
+          "color_type": colorType,
+          "total_price": totalPrice,
+          "order_status": orderStatus,
         },
       );
+
       if (response.statusCode == 200) {
+        print("Order added successfully!");
         fetchOrders();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order created successfully!')));
+      } else {
+        print("Error: ${response.statusCode}");
       }
     } catch (e) {
-      print("Error creating order: $e");
+      print("Failed to connect to server: $e");
     }
   }
 
   Future<void> updateOrderStatus(String id, String status) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/printing_api/update_status.php'),
+        Uri.parse('http://localhost/printing-services-final/printing_api/update_status.php'),
         body: {'order_id': id, 'order_status': status},
       );
       if (response.statusCode == 200) {
@@ -201,7 +218,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> deleteOrder(String id) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/printing_api/delete_order.php'),
+        Uri.parse('http://localhost/printing-services-final/printing_api/delete_order.php'),
         body: {'order_id': id},
       );
       if (response.statusCode == 200) {
@@ -216,6 +233,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // UI Dialog
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
+    TextEditingController serviceController = TextEditingController();
     TextEditingController docController = TextEditingController();
     TextEditingController pagesController = TextEditingController();
     TextEditingController colorController = TextEditingController();
@@ -239,6 +257,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // Print Type
+              DropdownButtonFormField<String>(
+                value: serviceController.text.isEmpty ? null : serviceController.text,
+                hint: const Text('Select print type...'),
+                decoration: InputDecoration(
+                  labelText: 'Print Type',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Print', child: Text('Print')),
+                  DropdownMenuItem(value: 'Xerox', child: Text('Xerox')),
+                  DropdownMenuItem(value: 'Scan', child: Text('Scan')),
+                ],
+                onChanged: (String? newValue) {
+                  setState(() {
+                    serviceController.text = newValue!;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+
               TextField(
                 controller: docController,
                 decoration: InputDecoration(
@@ -300,6 +340,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Navigator.pop(context);
               createOrder(
                 nameController.text,
+                serviceController.text,
                 docController.text,
                 pagesController.text,
                 colorController.text,
@@ -368,6 +409,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     headingRowColor: WidgetStateProperty.all(Colors.indigo[50]),
                                     columns: const [
                                       DataColumn(label: Text('Customer', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Print Type', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Document', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Pages', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Color', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -379,6 +421,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       return DataRow(
                                         cells: [
                                           DataCell(Text(order['customer_name'].toString())),
+                                          DataCell(Text(order['service_type'] ?? 'N/A')),
                                           DataCell(Text(order['document_type'].toString())),
                                           DataCell(Text(order['page_count'].toString())),
                                           DataCell(Text(order['color_type'].toString())),
