@@ -100,6 +100,8 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: passwordController,
                 obscureText: true,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (value) => login(),
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -190,12 +192,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
 
       if (response.statusCode == 200) {
-        print("Order added successfully!");
-        fetchOrders();
-      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Order Successfully Added!', style: TextStyle(color: Colors.white)),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+      // Refresh the table instantly
+      fetchOrders();
+    } else {
         print("Error: ${response.statusCode}");
-      }
-    } catch (e) {
+    }
+  } catch (e) {
       print("Failed to connect to server: $e");
     }
   }
@@ -407,6 +416,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                   child: DataTable(
                                     headingRowColor: WidgetStateProperty.all(Colors.indigo[50]),
+                                    columnSpacing: 40.0,
                                     columns: const [
                                       DataColumn(label: Text('Customer', style: TextStyle(fontWeight: FontWeight.bold))),
                                       DataColumn(label: Text('Print Type', style: TextStyle(fontWeight: FontWeight.bold))),
