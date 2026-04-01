@@ -364,6 +364,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onChanged: (String? newValue) {
                   setState(() {
                     colorController.text = newValue!;
+
+                    if (newValue == 'Xerox') {
+                      colorController.text = 'Black & White';
+                    }
                   });
                 },
               ),  
@@ -408,6 +412,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to log out?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), 
+              child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context); 
+                Navigator.pushReplacement(
+                  context, 
+                  MaterialPageRoute(builder: (context) => const LoginScreen()), 
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pinkAccent, 
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Logout', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // Main Dashboard UI
   @override
   Widget build(BuildContext context) {
@@ -425,11 +462,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () {
-              // Sends back to the Login Screen
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
+              _showLogoutDialog();
             },
           ),
           const SizedBox(width: 16),
