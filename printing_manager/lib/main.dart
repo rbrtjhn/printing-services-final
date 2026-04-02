@@ -296,17 +296,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[50],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Create New Order', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Create New Order', 
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Customer Name
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
                   labelText: 'Customer Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -317,7 +325,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 hint: const Text('Select print type...'),
                 decoration: InputDecoration(
                   labelText: 'Print Type',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'Print', child: Text('Print')),
@@ -332,80 +343,116 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Document Type
               TextField(
                 controller: docController,
                 decoration: InputDecoration(
                   labelText: 'Document Type',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: pagesController,
-                decoration: InputDecoration(
-                  labelText: 'Page Count',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Dropdown for Color Type
-              DropdownButtonFormField<String>(
-                value: colorController.text.isEmpty ? null : colorController.text,
-                hint: const Text('Select color type...'),
-                decoration: InputDecoration(
-               labelText: 'Color Type',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              // Page Count & Color Type
+              Row(
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: TextField(
+                      controller: pagesController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Pages',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    flex: 2,
+                    child: DropdownButtonFormField<String>(
+                      value: colorController.text.isEmpty ? null : colorController.text,
+                      hint: const Text('Color type...'),
+                      decoration: InputDecoration(
+                        labelText: 'Color Type',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
+                        DropdownMenuItem(value: 'Colored', child: Text('Colored')),
+                      ],
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          colorController.text = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                ],
               ),
-              items: const [
-                DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
-                DropdownMenuItem(value: 'Colored', child: Text('Colored')),
-              ],
-                onChanged: (String? newValue) {
-                  setState(() {
-                    colorController.text = newValue!;
-
-                    if (newValue == 'Xerox') {
-                      colorController.text = 'Black & White';
-                    }
-                  });
-                },
-              ),  
               const SizedBox(height: 16),
 
               // Price input
               TextField(
                 controller: priceController,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   labelText: 'Total Price (₱)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
                 ),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.indigo[800],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+          // Clearer Cancel Button
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
+          ),
+          // Gradient Submit Button
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              gradient: const LinearGradient(
+                colors: [Colors.cyan, Colors.pinkAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              boxShadow: [BoxShadow(color: Colors.pinkAccent.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 3))],
             ),
-            onPressed: () {
-              Navigator.pop(context);
-              createOrder(
-                nameController.text,
-                serviceController.text,
-                docController.text,
-                pagesController.text,
-                colorController.text,
-                priceController.text,
-                orderStatus,
-              );
-            },
-            child: const Text('Submit'),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent, // Let the gradient show
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+                createOrder(
+                  nameController.text,
+                  serviceController.text,
+                  docController.text,
+                  pagesController.text,
+                  colorController.text,
+                  priceController.text,
+                  orderStatus,
+                );
+              },
+              child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
           ),
         ],
       ),
