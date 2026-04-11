@@ -283,179 +283,220 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // UI Dialog
+
+// UI Dialog
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
-    TextEditingController serviceController = TextEditingController();
     TextEditingController docController = TextEditingController();
     TextEditingController pagesController = TextEditingController();
-    TextEditingController colorController = TextEditingController();
     TextEditingController priceController = TextEditingController();
+    
+    // Variables to hold the dropdown states
+    String? selectedService;
+    String? selectedSize;
+    String? selectedColor;
     String orderStatus = 'Pending';
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[50],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          'Create New Order', 
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Customer Name
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Customer Name',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
-                ),
-              ),
-              const SizedBox(height: 16),
+      builder: (context) {
+        // StatefulBuilder allows the dialog to rebuild live as we type!
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            
+            // THE BRAIN: Automatic Pricing Logic
+            void calculateTotal() {
+              double pricePerPage = 0.0;
+              int pages = int.tryParse(pagesController.text) ?? 0;
 
-              // Print Type
-              DropdownButtonFormField<String>(
-                value: serviceController.text.isEmpty ? null : serviceController.text,
-                hint: const Text('Select print type...'),
-                decoration: InputDecoration(
-                  labelText: 'Print Type',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Print', child: Text('Print')),
-                  DropdownMenuItem(value: 'Xerox', child: Text('Xerox')),
-                  DropdownMenuItem(value: 'Scan', child: Text('Scan')),
-                ],
-                onChanged: (String? newValue) {
-                  setState(() {
-                    serviceController.text = newValue!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
+              if (selectedService == 'Print Text') {
+                if (selectedColor == 'Black & White') {
+                  if (selectedSize == 'Short') pricePerPage = 2.0;
+                  else if (selectedSize == 'Long' || selectedSize == 'A4') pricePerPage = 3.0;
+                } else if (selectedColor == 'Colored') {
+                  if (selectedSize == 'Short' || selectedSize == 'A4') pricePerPage = 6.0;
+                  else if (selectedSize == 'Long') pricePerPage = 7.0;
+                }
+              } else if (selectedService == 'Print Photo') {
+                if (selectedColor == 'Black & White') pricePerPage = 6.0;
+                else if (selectedColor == 'Colored') pricePerPage = 10.0;
+              } else if (selectedService == 'Xerox') {
+                pricePerPage = 2.0; // Flat rate
+              } else if (selectedService == 'Scan') {
+                pricePerPage = 5.0; // Flat rate
+              }
 
-              // Document Type
-              TextField(
-                controller: docController,
-                decoration: InputDecoration(
-                  labelText: 'Document Type',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
-                ),
-              ),
-              const SizedBox(height: 16),
+              // Apply the math
+              double total = pricePerPage * pages;
+              
+              setStateDialog(() {
+                if (total > 0) {
+                  priceController.text = total.toStringAsFixed(2);
+                } else {
+                  priceController.text = '';
+                }
+              });
+            }
 
-              // Page Count & Color Type
-              Row(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: TextField(
-                      controller: pagesController,
-                      keyboardType: TextInputType.number,
+            return AlertDialog(
+              backgroundColor: Colors.grey[50],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                'Create New Order', 
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Customer Name
+                    TextField(
+                      controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Pages',
+                        labelText: 'Customer Name',
                         filled: true,
                         fillColor: Colors.white,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: DropdownButtonFormField<String>(
-                      value: colorController.text.isEmpty ? null : colorController.text,
-                      hint: const Text('Color type...'),
-                      decoration: InputDecoration(
-                        labelText: 'Color Type',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
-                      ),
-                      items: const [
-                        DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
-                        DropdownMenuItem(value: 'Colored', child: Text('Colored')),
+                    const SizedBox(height: 12),
+
+                    // Print Type & Document Type Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: selectedService,
+                            hint: const Text('Print Type...'),
+                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            items: const [
+                              DropdownMenuItem(value: 'Print Text', child: Text('Print Text')),
+                              DropdownMenuItem(value: 'Print Photo', child: Text('Print Photo')),
+                              DropdownMenuItem(value: 'Xerox', child: Text('Xerox')),
+                              DropdownMenuItem(value: 'Scan', child: Text('Scan')),
+                            ],
+                            onChanged: (newValue) {
+                              setStateDialog(() => selectedService = newValue);
+                              calculateTotal(); // Trigger calculation
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: docController,
+                            decoration: InputDecoration(labelText: 'Document Type', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                          ),
+                        ),
                       ],
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          colorController.text = newValue!;
-                        });
-                      },
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
-              // Price input
-              TextField(
-                controller: priceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Total Price (₱)',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
+                    // Paper Size & Color Type Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: selectedSize,
+                            hint: const Text('Paper Size...'),
+                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            items: const [
+                              DropdownMenuItem(value: 'Short', child: Text('Short')),
+                              DropdownMenuItem(value: 'Long', child: Text('Long')),
+                              DropdownMenuItem(value: 'A4', child: Text('A4')),
+                            ],
+                            onChanged: (newValue) {
+                              setStateDialog(() => selectedSize = newValue);
+                              calculateTotal(); // Trigger calculation
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: selectedColor,
+                            hint: const Text('Color Type...'),
+                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                            items: const [
+                              DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
+                              DropdownMenuItem(value: 'Colored', child: Text('Colored')),
+                            ],
+                            onChanged: (newValue) {
+                              setStateDialog(() => selectedColor = newValue);
+                              calculateTotal(); // Trigger calculation
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Page Count & Total Price Row
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: TextField(
+                            controller: pagesController,
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) => calculateTotal(), // Calculates EVERY time you type a number!
+                            decoration: InputDecoration(labelText: 'Pages', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: TextField(
+                            controller: priceController,
+                            readOnly: true, // Stops you from manually changing the math
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.indigo),
+                            decoration: InputDecoration(
+                              labelText: 'Total Price (₱)', 
+                              filled: true, 
+                              fillColor: Colors.indigo[50], 
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-        actions: [
-          // Clearer Cancel Button
-          TextButton(
-            onPressed: () => Navigator.pop(context), 
-            child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
-          ),
-          // Gradient Submit Button
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              gradient: const LinearGradient(
-                colors: [Colors.cyan, Colors.pinkAccent],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              boxShadow: [BoxShadow(color: Colors.pinkAccent.withOpacity(0.3), blurRadius: 6, offset: const Offset(0, 3))],
-            ),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent, // Let the gradient show
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-                createOrder(
-                  nameController.text,
-                  serviceController.text,
-                  docController.text,
-                  pagesController.text,
-                  colorController.text,
-                  priceController.text,
-                  orderStatus,
-                );
-              },
-              child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
-      ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context), 
+                  child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    gradient: const LinearGradient(colors: [Colors.cyan, Colors.pinkAccent]),
+                  ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Send the selected values back to the PHP database
+                      createOrder(
+                        nameController.text,
+                        selectedService ?? 'N/A',
+                        docController.text,
+                        pagesController.text,
+                        selectedColor ?? 'N/A',
+                        priceController.text,
+                        orderStatus,
+                      );
+                    },
+                    child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            );
+          }
+        );
+      },
     );
   }
 
