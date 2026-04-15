@@ -1,7 +1,7 @@
-# RJ Printing Services Management System
+# Printing Services Management System
 
 ## Overview
-The RJ Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business. Built with a **Flutter** frontend and a **PHP/MySQL** backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
+The Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business. Built with a **Flutter** frontend and a **PHP/MySQL** backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
 
 ---
 
