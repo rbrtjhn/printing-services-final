@@ -1,8 +1,9 @@
 **Printing Services Management System**
 
+
 **Overview**
-The Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business.
-Built with a Flutter frontend and a PHP/MySQL backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
+The Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business. Built with a Flutter frontend and a PHP/MySQL backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
+
 
 **Core Features (Deliverable 2 Updates)**
 **Automated Dynamic Pricing**: Calculates exact totals based on document type, color, paper size, and page count in real-time.
@@ -10,11 +11,13 @@ Built with a Flutter frontend and a PHP/MySQL backend, the system streamlines th
 **Automated SMS Notification Logic**: Backend architecture designed to trigger conditional SMS alerts when an order status is updated to "Done," ensuring clients are notified for pickup and payment.
 **Full CRUD Operations**: Seamlessly Create, Read, Update, and Delete customer orders through a connected XAMPP local server.
 
+
 **Technology Stack**
 Frontend: Flutter (Dart)
 Backend: PHP (REST API)
 Database: MySQL (phpMyAdmin)
 Server: XAMPP (Localhost)
+
 
 **Setup & Installation Instructions**
 To run this project locally for grading or testing, follow these exact steps:
