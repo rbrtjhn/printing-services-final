@@ -1,11 +1,11 @@
-# 🖨️ RJ Printing Services Management System
+# RJ Printing Services Management System
 
-## 📖 Overview
+## Overview
 The RJ Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business. Built with a **Flutter** frontend and a **PHP/MySQL** backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
 
 ---
 
-## ✨ Core Features (Deliverable 2 Updates)
+## Core Features (Deliverable 2 Updates)
 * **Automated Dynamic Pricing:** Calculates exact totals based on document type, color, paper size, and page count in real-time.
 * **Digital Receipt Generator:** Instantly renders a professional, screenshot-ready digital receipt for corporate clients and record-keeping.
 * **Automated SMS Notification Logic:** Backend architecture designed to trigger conditional SMS alerts when an order status is updated to "Done," ensuring clients are notified for pickup and payment.
@@ -13,7 +13,7 @@ The RJ Printing Services Management System is a full-stack, cross-platform appli
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 * **Frontend:** Flutter (Dart)
 * **Backend:** PHP (REST API)
 * **Database:** MySQL (phpMyAdmin)
@@ -21,7 +21,7 @@ The RJ Printing Services Management System is a full-stack, cross-platform appli
 
 ---
 
-## 🚀 Setup & Installation Instructions
+## Setup & Installation Instructions
 To run this project locally for grading or testing, follow these exact steps:
 
 ### 1. Database Setup
