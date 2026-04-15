@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 // LoginScreen
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -34,10 +35,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+  bool _isObscure = true;
 
   Future<void> login() async {
     try {
-      // Sending the username and password to PHP API
       final response = await http.post(
         Uri.parse('http://localhost/printing-services-final/printing_api/login.php'),
         body: {
@@ -49,14 +50,12 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
-        // If PHP says success is true, it directs to the dashboard
         if (data['success'] == true) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         } else {
-          // If PHP says false, it will show the error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(data['message'])),
           );
@@ -69,9 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  bool _isObscure = true;
-
-  // Login UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,18 +102,16 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Username Field
               TextField(
                 controller: usernameController,
                 decoration: InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.cyan)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan)),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Password Field
               TextField(
                 controller: passwordController,
                 obscureText: _isObscure,
@@ -126,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.cyan)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan)),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isObscure ? Icons.visibility_off : Icons.visibility,
@@ -142,7 +136,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Login Button
               Container(
                 width: double.infinity,
                 height: 50,
@@ -173,6 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
 
 // Dashboard Screen
 class DashboardScreen extends StatefulWidget {
@@ -207,7 +201,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // The HTTP POST Function
   Future<void> createOrder(
     String customerName,
     String serviceType,
@@ -216,9 +209,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String colorType,
     String totalPrice,
     String orderStatus,
+    String phoneNumber, 
   ) async {
-  
-
     var url = Uri.parse('http://localhost/printing-services-final/printing_api/add_order.php'); 
 
     try {
@@ -232,6 +224,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           "color_type": colorType,
           "total_price": totalPrice,
           "order_status": orderStatus,
+          "phone_number": phoneNumber 
         },
       );
 
@@ -242,8 +235,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
             duration: Duration(seconds: 2),
           ),
         );
-
-      // Refresh the table instantly
       fetchOrders();
     } else {
         print("Error: ${response.statusCode}");
@@ -253,15 +244,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  Future<void> updateOrderStatus(String id, String status) async {
+
+  // FAKE SMS DEMO
+  Future<void> updateOrderStatus(Map order, String status) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost/printing-services-final/printing_api/update_status.php'),
-        body: {'order_id': id, 'order_status': status},
+        body: {'order_id': order['order_id'].toString(), 'order_status': status},
       );
       if (response.statusCode == 200) {
         fetchOrders();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status updated!')));
+        
+        // Shows the green SMS banner if the status is Done AND they have a phone number
+        if (status == 'Done' && order['phone_number'] != null && order['phone_number'].toString().trim().isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.mark_email_read, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text('Automated SMS sent to ${order['phone_number']}'),
+                ],
+              ),
+              backgroundColor: Colors.green[700],
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status updated!')));
+        }
       }
     } catch (e) {
       print("Error updating status: $e");
@@ -284,14 +295,109 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
 
-// UI Dialog
+  // Digital Receipt Dialog Function
+  void showReceiptDialog(Map order) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: Container(
+            width: 300,
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Store Header
+                const Icon(Icons.receipt_long, size: 40, color: Colors.indigo),
+                const SizedBox(height: 8),
+                const Text('RJ PRINTING SERVICES', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                const Text('Buhangin, Davao City', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Divider(thickness: 2, height: 32),
+                
+                // Customer Details
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Customer:', style: TextStyle(color: Colors.grey)),
+                    Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Date:', style: TextStyle(color: Colors.grey)),
+                    Text(order['order_date'] != null ? order['order_date'].toString().split(' ')[0] : 'N/A', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Status:', style: TextStyle(color: Colors.grey)),
+                    Text(
+                      order['payment_status'] ?? 'Unpaid', 
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold, 
+                        color: order['payment_status'] == 'Paid' ? Colors.green : Colors.red
+                      )
+                    ),
+                  ],
+                ),
+                const Divider(height: 32),
+
+                // Order Details
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('${order['page_count']}x ${order['service_type']}'),
+                    Text('₱ ${order['total_price']}'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('(${order['color_type']} - ${order['document_type']})', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                ),
+                const Divider(thickness: 2, height: 32),
+
+                // Total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('TOTAL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('₱ ${order['total_price']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                // Close Button
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Close / Screenshot'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+  // Create Order Dialog
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController docController = TextEditingController();
     TextEditingController pagesController = TextEditingController();
     TextEditingController priceController = TextEditingController();
+    TextEditingController phoneController = TextEditingController();
     
-    // Variables to hold the dropdown states
     String? selectedService;
     String? selectedSize;
     String? selectedColor;
@@ -300,11 +406,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        // StatefulBuilder allows the dialog to rebuild live as we type!
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             
-            // THE BRAIN: Automatic Pricing Logic
             void calculateTotal() {
               double pricePerPage = 0.0;
               int pages = int.tryParse(pagesController.text) ?? 0;
@@ -321,12 +425,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (selectedColor == 'Black & White') pricePerPage = 6.0;
                 else if (selectedColor == 'Colored') pricePerPage = 10.0;
               } else if (selectedService == 'Xerox') {
-                pricePerPage = 2.0; // Flat rate
+                pricePerPage = 2.0; 
               } else if (selectedService == 'Scan') {
-                pricePerPage = 5.0; // Flat rate
+                pricePerPage = 5.0; 
               }
 
-              // Apply the math
               double total = pricePerPage * pages;
               
               setStateDialog(() {
@@ -349,7 +452,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Customer Name
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
@@ -362,7 +464,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Print Type & Document Type Row
+                    TextField(
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Customer Phone (Optional)',
+                        hintText: 'e.g. 09123456789',
+                        prefixIcon: const Icon(Icons.phone),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
                     Row(
                       children: [
                         Expanded(
@@ -378,7 +494,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                             onChanged: (newValue) {
                               setStateDialog(() => selectedService = newValue);
-                              calculateTotal(); // Trigger calculation
+                              calculateTotal(); 
                             },
                           ),
                         ),
@@ -393,7 +509,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Paper Size & Color Type Row
                     Row(
                       children: [
                         Expanded(
@@ -408,7 +523,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                             onChanged: (newValue) {
                               setStateDialog(() => selectedSize = newValue);
-                              calculateTotal(); // Trigger calculation
+                              calculateTotal(); 
                             },
                           ),
                         ),
@@ -424,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                             onChanged: (newValue) {
                               setStateDialog(() => selectedColor = newValue);
-                              calculateTotal(); // Trigger calculation
+                              calculateTotal(); 
                             },
                           ),
                         ),
@@ -432,7 +547,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Page Count & Total Price Row
                     Row(
                       children: [
                         Expanded(
@@ -440,7 +554,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           child: TextField(
                             controller: pagesController,
                             keyboardType: TextInputType.number,
-                            onChanged: (value) => calculateTotal(), // Calculates EVERY time you type a number!
+                            onChanged: (value) => calculateTotal(), 
                             decoration: InputDecoration(labelText: 'Pages', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
                           ),
                         ),
@@ -449,7 +563,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           flex: 2,
                           child: TextField(
                             controller: priceController,
-                            readOnly: true, // Stops you from manually changing the math
+                            readOnly: true, 
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.indigo),
                             decoration: InputDecoration(
                               labelText: 'Total Price (₱)', 
@@ -478,7 +592,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent),
                     onPressed: () {
                       Navigator.pop(context);
-                      // Send the selected values back to the PHP database
                       createOrder(
                         nameController.text,
                         selectedService ?? 'N/A',
@@ -487,6 +600,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         selectedColor ?? 'N/A',
                         priceController.text,
                         orderStatus,
+                        phoneController.text, 
                       );
                     },
                     child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -500,6 +614,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+
+  // Logout Confirmation Dialog
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -532,6 +648,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       },
     );
   }
+
 
   // Main Dashboard UI
   @override
@@ -570,7 +687,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        // LayoutBuilder helps the DataTable stretch properly without crashing
                         child: LayoutBuilder(
                           builder: (context, constraints) {
                             return SingleChildScrollView(
@@ -600,7 +716,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           DataCell(Text(order['document_type'].toString())),
                                           DataCell(Text(order['page_count'].toString())),
                                           DataCell(Text(order['color_type'].toString())),
-                                          // Peso sign
                                           DataCell(Text('₱ ${order['total_price']}')),
                                           DataCell(
                                             DropdownButton<String>(
@@ -614,39 +729,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                   child: Text(value),
                                                 );
                                               }).toList(),
+                                              //
                                               onChanged: (String? newValue) {
                                                 if (newValue != null) {
-                                                  updateOrderStatus(order['order_id'].toString(), newValue);
+                                                  updateOrderStatus(order, newValue); 
                                                 }
                                               },
                                             ),
                                           ),
                                           DataCell(
-                                            IconButton(
-                                              icon: const Icon(Icons.delete, color: Colors.red),
-                                              onPressed: () {
-                                                showDialog(
-                                                  context: context,
-                                                  builder: (context) => AlertDialog(
-                                                    title: const Text('Delete Order'),
-                                                    content: const Text('Are you sure you want to delete this order?'),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () => Navigator.pop(context),
-                                                        child: const Text('Cancel'),
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(Icons.receipt, color: Colors.blue),
+                                                  tooltip: 'View Receipt',
+                                                  onPressed: () {
+                                                    showReceiptDialog(order); 
+                                                  },
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                                  tooltip: 'Delete Order',
+                                                  onPressed: () {
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (context) => AlertDialog(
+                                                        title: const Text('Delete Order'),
+                                                        content: const Text('Are you sure you want to delete this order?'),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () => Navigator.pop(context),
+                                                            child: const Text('Cancel'),
+                                                          ),
+                                                          ElevatedButton(
+                                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                            onPressed: () {
+                                                              Navigator.pop(context);
+                                                              deleteOrder(order['order_id'].toString());
+                                                            },
+                                                            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                                                          ),
+                                                        ],
                                                       ),
-                                                      ElevatedButton(
-                                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                                                        onPressed: () {
-                                                          Navigator.pop(context);
-                                                          deleteOrder(order['order_id'].toString());
-                                                        },
-                                                        child: const Text('Delete', style: TextStyle(color: Colors.white)),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
+                                                    );
+                                                  },
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
