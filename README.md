@@ -1,41 +1,36 @@
 # Printing Services Management System
 
-## Overview
-The Printing Services Management System is a full-stack, cross-platform application designed to automate pricing, track customer orders, and manage digital receipts for a local printing business. Built with a **Flutter** frontend and a **PHP/MySQL** backend, the system streamlines the transition from physical order slips to a fully digital dashboard.
+This is the system I built for my IT309 project. Since I actually handle printing for my family, relatives, and neighbors at home, I wanted to build something practical that replaces my messy manual notes app and calculator. 
 
----
+It's a Flutter app connected to a local PHP/MySQL backend that tracks orders, computes prices automatically, and manages receipts.
 
-## Core Features (Deliverable 2 Updates)
-* **Automated Dynamic Pricing:** Calculates exact totals based on document type, color, paper size, and page count in real-time.
-* **Digital Receipt Generator:** Instantly renders a professional, screenshot-ready digital receipt for corporate clients and record-keeping.
-* **Automated SMS Notification Logic:** Backend architecture designed to trigger conditional SMS alerts when an order status is updated to "Done," ensuring clients are notified for pickup and payment.
-* **Full CRUD Operations:** Seamlessly Create, Read, Update, and Delete customer orders through a connected XAMPP local server.
+### What's Inside (Deliverable 2 Updates)
+* **Auto-Calculator:** No more guessing prices. You just input the pages, paper size, and whether it's colored or black-and-white, and it computes the exact total instantly.
+* **Digital Receipts:** Instead of buying a physical thermal printer, the app generates a clean, POS-style receipt on the screen. I can just screenshot it and send it to the customer via Messenger.
+* **Automated SMS Logic:** The backend is wired up to trigger an SMS workflow the moment an order status is changed to "Done" in the dashboard. This reminds people to pick up their prints and pay their balances.
+* **Order Management:** Full create, read, update, and delete capabilities directly tied to the local database.
 
----
-
-## Technology Stack
+### Built With
 * **Frontend:** Flutter (Dart)
-* **Backend:** PHP (REST API)
-* **Database:** MySQL (phpMyAdmin)
-* **Server:** XAMPP (Localhost)
+* **Backend:** PHP
+* **Database:** MySQL
+* **Local Server:** XAMPP
 
 ---
 
-## Setup & Installation Instructions
-To run this project locally for grading or testing, follow these exact steps:
+### How to run this on your machine
+If you need to test this project, here is how to get it running locally:
 
-### 1. Database Setup
-* Launch **XAMPP** and start the `Apache` and `MySQL` modules.
-* Open your browser and go to `http://localhost/phpmyadmin`.
-* Create a new database named `printing_db`.
-* Import the provided `printing_db.sql` file (or manually create the `tbl_orders` and `users` tables).
+**1. Set up the Database**
+* Open XAMPP and start Apache and MySQL.
+* Open your browser, go to `http://localhost/phpmyadmin`, and create a database called `printing_db`.
+* Import the `printing_db.sql` file included in this repository.
 
-### 2. Backend API Setup
-* Place the `printing-services-final` folder (containing the PHP scripts) into your XAMPP `htdocs` directory (`C:\xampp\htdocs\`).
+**2. Connect the Backend**
+* Grab the `printing-services-final` folder (which has all the PHP files) and paste it into your XAMPP `htdocs` folder (usually `C:\xampp\htdocs\`).
 
-### 3. Flutter App Setup
-* Open the Flutter project folder in Visual Studio Code or Android Studio.
-* Run `flutter pub get` in the terminal to install any required dependencies (like the `http` package).
-* Ensure your emulator is running or your physical device is connected.
-* *Note:* If running on a physical Android device, ensure the API URLs in `main.dart` point to your computer's local IPv4 address instead of `localhost`.
-* Press **F5** or run `flutter run` to launch the application.
+**3. Run the Flutter App**
+* Open the Flutter project folder in VS Code or Android Studio.
+* Run `flutter pub get` in the terminal just to make sure the HTTP packages are installed.
+* **Important Note:** If you are testing this on a physical Android phone instead of an emulator, you need to open `main.dart` and change `localhost` in the API links to your computer's actual IPv4 Wi-Fi address. Otherwise, the phone won't be able to talk to XAMPP.
+* Hit Run (F5) and try adding an order!
