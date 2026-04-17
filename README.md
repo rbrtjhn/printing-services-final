@@ -21,15 +21,21 @@ It's a Flutter app connected to a local PHP/MySQL backend that tracks orders, co
 ### How to run this on your machine
 If you need to test this project, here is how to get it running locally:
 
-**1. Set up the Database**
+**1. Clone the Repository**
+* Open your terminal or command prompt.
+* Navigate to the folder where you want to save the project.
+* Run the following command to download the source code:
+  `git clone https://github.com/rbrtjhn/printing-services-final.git`
+
+**2. Set up the Database**
 * Open XAMPP and start Apache and MySQL.
 * Open your browser, go to `http://localhost/phpmyadmin`, and create a database called `printing_db`.
 * Import the `printing_db.sql` file included in this repository.
 
-**2. Connect the Backend**
+**3. Connect the Backend**
 * Grab the `printing-services-final` folder (which has all the PHP files) and paste it into your XAMPP `htdocs` folder (usually `C:\xampp\htdocs\`).
 
-**3. Run the Flutter App**
+**4. Run the Flutter App**
 * Open the Flutter project folder in VS Code or Android Studio.
 * Run `flutter pub get` in the terminal just to make sure the HTTP packages are installed.
 * **Important Note:** If you are testing this on a physical Android phone instead of an emulator, you need to open `main.dart` and change `localhost` in the API links to your computer's actual IPv4 Wi-Fi address. Otherwise, the phone won't be able to talk to XAMPP.
