@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,7 +16,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Printing Services',
       theme: ThemeData(
-        primarySwatch: Colors.indigo,
+        primarySwatch: Colors.blueGrey,
+        fontFamily: 'Roboto',
       ),
       home: const LoginScreen(),
     );
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
 }
 
 
-// LoginScreen
+// Login Screen
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -34,9 +36,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  bool isLoading = false;
   bool _isObscure = true;
 
+  // Sends credentials to PHP backend to verify the admin
   Future<void> login() async {
     try {
       final response = await http.post(
@@ -57,13 +59,13 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'])),
+            SnackBar(content: Text(data['message'], style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red[700]),
           );
         }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Database connection error! Is XAMPP running?')),
+        SnackBar(content: const Text('Database connection error. Is XAMPP running?'), backgroundColor: Colors.red[700]),
       );
     }
   }
@@ -71,91 +73,72 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF4F6F8),
       body: Center(
         child: Card(
-          elevation: 8,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           margin: const EdgeInsets.all(32),
           child: Container(
-            width: 380,
-            padding: const EdgeInsets.all(32.0),
+            width: 400,
+            padding: const EdgeInsets.all(40.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ShaderMask(
-                  shaderCallback: (bounds) => const LinearGradient(
-                    colors: [Colors.cyan, Colors.pinkAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ).createShader(bounds),
-                  child: const Icon(Icons.print_outlined, size: 70, color: Colors.white),
+                Icon(Icons.print, size: 60, color: Colors.blueGrey[800]),
+                const SizedBox(height: 16),
+                Text(
+                  'Printing Services',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5, color: Colors.blueGrey[900]),
                 ),
-              const SizedBox(height: 16),
-              Text(
-                'Printing Services Login',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey[900],
-                ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 40),
 
-              TextField(
-                controller: usernameController,
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan)),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: passwordController,
-                obscureText: _isObscure,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (value) => login(),
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan)),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _isObscure ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.grey,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isObscure = !_isObscure;
-                      });
-                    },
+                TextField(
+                  controller: usernameController,
+                  decoration: InputDecoration(
+                    labelText: 'Username',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 20),
 
-              Container(
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                    gradient: const LinearGradient(
-                      colors: [Colors.cyan, Colors.pinkAccent],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
+                TextField(
+                  controller: passwordController,
+                  obscureText: _isObscure,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) => login(),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.blueGrey[400]),
+                      onPressed: () {
+                        setState(() { _isObscure = !_isObscure; });
+                      },
                     ),
-                    boxShadow: [BoxShadow(color: Colors.pinkAccent.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
                   ),
+                ),
+                const SizedBox(height: 40),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: Colors.blue[600],
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text('Login', style: TextStyle(color: Colors.white,fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -168,7 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 
-// Dashboard Screen
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -180,13 +162,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List orders = [];
   bool isLoading = true;
 
+  // Google Gemini API key
+  final String apiKey = '';
+
   @override
   void initState() {
     super.initState();
-    fetchOrders();
+    fetchOrders(); // Load the database table immediately when the screen opens
   }
 
-  // API Functions
+  // Packages of current database state and sends it to the Gemini AI Agent
+  Future<void> showAIInsights() async {
+    // Show a loading circle so the user knows the AI is "thinking"
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: Colors.purple)),
+    );
+
+    try {
+      // Calculate total expected revenue dynamically to feed to the AI prompt
+      double estimatedRevenue = 0;
+      for (var order in orders) {
+        estimatedRevenue += double.tryParse(order['total_price'].toString()) ?? 0.0;
+      }
+      int pending = orders.where((o) => o['order_status'] == 'Pending').length;
+
+      String prompt = '''
+      You are an AI Business Assistant for a Printing Services shop. 
+      I have ${orders.length} total orders, with $pending still pending.
+      My total expected revenue is ₱$estimatedRevenue.
+      Here is my current queue data: $orders
+
+      Please give me a clear, simple 3-sentence summary:
+      1. Tell me my total expected revenue and what type of printing is most popular right now.
+      2. Identify any large orders that might slow down the printer.
+      3. Tell me exactly which specific order I should print next to be the most efficient. Use the Customer's Name (NEVER use order ID numbers), and explain why in plain English.
+      ''';
+
+      // Connect to Google's lastest flash model
+      final model = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
+      final content = [Content.text(prompt)];
+      final response = await model.generateContent(content);
+
+      // Close the loading circle
+      Navigator.pop(context);
+
+      // Display the AI's analysis in a clean dialog box
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Row(
+            children: [
+              Icon(Icons.auto_awesome, color: Colors.purple[600]),
+              const SizedBox(width: 10),
+              Text('AI Assistant Insights', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
+          content: Text(response.text ?? 'I could not analyze the data right now.', style: TextStyle(color: Colors.blueGrey[800], fontSize: 14, height: 1.5)),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple[600], elevation: 0),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Got it!', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context); // Close loading circle on error
+      print("AI ACTUAL ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e', style: const TextStyle(color: Colors.white)), 
+          backgroundColor: Colors.red[900],
+          duration: const Duration(seconds: 8),
+        )
+      );
+    }
+  }
+
+  // Grabs the latest list of orders from MySQL
   Future<void> fetchOrders() async {
     try {
       final response = await http.get(Uri.parse('http://localhost/printing-services-final/printing_api/get_orders.php'));
@@ -201,51 +259,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Sends a new order payload to the backend
   Future<void> createOrder(
-    String customerName,
-    String serviceType,
-    String documentType,
-    String pageCount,
-    String colorType,
-    String totalPrice,
-    String orderStatus,
-    String phoneNumber, 
+    String customerName, String serviceType, String documentType, 
+    String pageCount, String colorType, String totalPrice, 
+    String orderStatus
   ) async {
     var url = Uri.parse('http://localhost/printing-services-final/printing_api/add_order.php'); 
-
     try {
       var response = await http.post(
         url,
         body: {
-          "customer_name": customerName,
-          "service_type": serviceType,
-          "document_type": documentType,
-          "page_count": pageCount,
-          "color_type": colorType,
-          "total_price": totalPrice,
-          "order_status": orderStatus,
-          "phone_number": phoneNumber 
+          "customer_name": customerName, "service_type": serviceType, "document_type": documentType,
+          "page_count": pageCount, "color_type": colorType, "total_price": totalPrice,
+          "order_status": orderStatus
         },
       );
-
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Order Successfully Added!', style: TextStyle(color: Colors.white)),
-            duration: Duration(seconds: 2),
-          ),
+          SnackBar(content: const Text('Order successfully added', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green[700], behavior: SnackBarBehavior.floating),
         );
-      fetchOrders();
-    } else {
-        print("Error: ${response.statusCode}");
-    }
-  } catch (e) {
+      fetchOrders(); // Refresh the table automatically
+      }
+    } catch (e) {
       print("Failed to connect to server: $e");
     }
   }
 
-
-  // FAKE SMS DEMO
+  // Updates the status dropdown (Pending/Printing/Done)
   Future<void> updateOrderStatus(Map order, String status) async {
     try {
       final response = await http.post(
@@ -253,32 +294,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: {'order_id': order['order_id'].toString(), 'order_status': status},
       );
       if (response.statusCode == 200) {
-        fetchOrders();
-        
-        // Shows the green SMS banner if the status is Done AND they have a phone number
-        if (status == 'Done' && order['phone_number'] != null && order['phone_number'].toString().trim().isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.mark_email_read, color: Colors.white),
-                  const SizedBox(width: 10),
-                  Text('Automated SMS sent to ${order['phone_number']}'),
-                ],
-              ),
-              backgroundColor: Colors.green[700],
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status updated!')));
-        }
+        fetchOrders(); // Refresh UI to show new status color
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: const Text('Status updated'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.blueGrey[800])
+        );
       }
     } catch (e) {
       print("Error updating status: $e");
     }
   }
 
+  // Completely removes an order from the database
   Future<void> deleteOrder(String id) async {
     try {
       final response = await http.post(
@@ -287,98 +313,110 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       if (response.statusCode == 200) {
         fetchOrders();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Order deleted!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: const Text('Order removed'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.blueGrey[800])
+        );
       }
     } catch (e) {
       print("Error deleting order: $e");
     }
   }
 
+  // Sets the background pill color based on status
+  Color _getStatusBgColor(String status) {
+    switch (status) {
+      case 'Pending': return Colors.orange.withOpacity(0.1);
+      case 'Printing': return Colors.blue.withOpacity(0.1);
+      case 'Done': return Colors.green.withOpacity(0.1);
+      default: return Colors.grey.withOpacity(0.1);
+    }
+  }
 
-  // Digital Receipt Dialog Function
+  // Sets the text color based on status
+  Color _getStatusTextColor(String status) {
+    switch (status) {
+      case 'Pending': return Colors.orange[800]!;
+      case 'Printing': return Colors.blue[700]!;
+      case 'Done': return Colors.green[700]!;
+      default: return Colors.grey[800]!;
+    }
+  }
+
+  // Pops up the digital receipt for a specific order
   void showReceiptDialog(Map order) {
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)), 
           child: Container(
-            width: 300,
-            padding: const EdgeInsets.all(24.0),
+            width: 320,
+            padding: const EdgeInsets.all(32.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Store Header
-                const Icon(Icons.receipt_long, size: 40, color: Colors.indigo),
-                const SizedBox(height: 8),
-                const Text('RJ PRINTING SERVICES', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
-                const Text('Buhangin, Davao City', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                const Divider(thickness: 2, height: 32),
-                
-                // Customer Details
+                Icon(Icons.receipt_long, size: 40, color: Colors.blueGrey[900]),
+                const SizedBox(height: 12),
+                Text('PRINTING SERVICES', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: Colors.blueGrey[900])),
+                Text('Buhangin, Davao City', style: TextStyle(fontSize: 12, color: Colors.blueGrey[500])),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Divider(thickness: 1, color: Colors.grey.shade300), 
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Customer:', style: TextStyle(color: Colors.grey)),
-                    Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Customer:', style: TextStyle(color: Colors.blueGrey[600], fontSize: 13)),
+                    Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Date:', style: TextStyle(color: Colors.grey)),
-                    Text(order['order_date'] != null ? order['order_date'].toString().split(' ')[0] : 'N/A', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Date:', style: TextStyle(color: Colors.blueGrey[600], fontSize: 13)),
+                    Text(order['order_date'] != null ? order['order_date'].toString().split(' ')[0] : 'N/A', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),
-                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Divider(thickness: 1, color: Colors.grey.shade300),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Status:', style: TextStyle(color: Colors.grey)),
-                    Text(
-                      order['payment_status'] ?? 'Unpaid', 
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold, 
-                        color: order['payment_status'] == 'Paid' ? Colors.green : Colors.red
-                      )
-                    ),
+                    Text('${order['page_count']}x ${order['service_type']}', style: const TextStyle(fontSize: 14)),
+                    Text('₱ ${order['total_price']}', style: const TextStyle(fontSize: 14)),
                   ],
                 ),
-                const Divider(height: 32),
-
-                // Order Details
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('${order['page_count']}x ${order['service_type']}'),
-                    Text('₱ ${order['total_price']}'),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('(${order['color_type']} - ${order['document_type']})', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  child: Text('(${order['color_type']} - ${order['document_type']})', style: TextStyle(fontSize: 12, color: Colors.blueGrey[500])),
                 ),
-                const Divider(thickness: 2, height: 32),
-
-                // Total
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Divider(thickness: 1, color: Colors.grey.shade300),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('TOTAL', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('₱ ${order['total_price']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo)),
+                    const Text('TOTAL DUE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('₱ ${order['total_price']}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey[900])),
                   ],
                 ),
-                const SizedBox(height: 32),
-
-                // Close Button
+                const SizedBox(height: 40),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close / Screenshot'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blueGrey[800],
+                      side: BorderSide(color: Colors.blueGrey.shade200),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    ),
+                    child: const Text('Close Receipt'),
                   ),
                 ),
               ],
@@ -389,19 +427,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
-  // Create Order Dialog
+  // Opens the form to add a new order and handles dynamic pricing logic
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController docController = TextEditingController();
     TextEditingController pagesController = TextEditingController();
     TextEditingController priceController = TextEditingController();
-    TextEditingController phoneController = TextEditingController();
     
     String? selectedService;
     String? selectedSize;
     String? selectedColor;
-    String orderStatus = 'Pending';
+    String orderStatus = 'Pending'; // Default status for all new orders
 
     showDialog(
       context: context,
@@ -409,6 +445,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             
+            // Automatically updates the Total Price field based on dropdowns
             void calculateTotal() {
               double pricePerPage = 0.0;
               int pages = int.tryParse(pagesController.text) ?? 0;
@@ -442,169 +479,140 @@ class _DashboardScreenState extends State<DashboardScreen> {
             }
 
             return AlertDialog(
-              backgroundColor: Colors.grey[50],
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text(
-                'Create New Order', 
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900]),
-              ),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              title: Text('New Print Order', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[900], fontSize: 20)),
               content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: 'Customer Name',
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
+                child: SizedBox(
+                  width: 400,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Customer Name',
+                          filled: true,
+                          fillColor: const Color(0xFFF8FAFC),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600)),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    TextField(
-                      controller: phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: 'Customer Phone (Optional)',
-                        hintText: 'e.g. 09123456789',
-                        prefixIcon: const Icon(Icons.phone),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.cyan, width: 2)),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: selectedService,
-                            hint: const Text('Print Type...'),
-                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                            items: const [
-                              DropdownMenuItem(value: 'Print Text', child: Text('Print Text')),
-                              DropdownMenuItem(value: 'Print Photo', child: Text('Print Photo')),
-                              DropdownMenuItem(value: 'Xerox', child: Text('Xerox')),
-                              DropdownMenuItem(value: 'Scan', child: Text('Scan')),
-                            ],
-                            onChanged: (newValue) {
-                              setStateDialog(() => selectedService = newValue);
-                              calculateTotal(); 
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: docController,
-                            decoration: InputDecoration(labelText: 'Document Type', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: selectedSize,
-                            hint: const Text('Paper Size...'),
-                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                            items: const [
-                              DropdownMenuItem(value: 'Short', child: Text('Short')),
-                              DropdownMenuItem(value: 'Long', child: Text('Long')),
-                              DropdownMenuItem(value: 'A4', child: Text('A4')),
-                            ],
-                            onChanged: (newValue) {
-                              setStateDialog(() => selectedSize = newValue);
-                              calculateTotal(); 
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: selectedColor,
-                            hint: const Text('Color Type...'),
-                            decoration: InputDecoration(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                            items: const [
-                              DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
-                              DropdownMenuItem(value: 'Colored', child: Text('Colored')),
-                            ],
-                            onChanged: (newValue) {
-                              setStateDialog(() => selectedColor = newValue);
-                              calculateTotal(); 
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 1,
-                          child: TextField(
-                            controller: pagesController,
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) => calculateTotal(), 
-                            decoration: InputDecoration(labelText: 'Pages', filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: TextField(
-                            controller: priceController,
-                            readOnly: true, 
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.indigo),
-                            decoration: InputDecoration(
-                              labelText: 'Total Price (₱)', 
-                              filled: true, 
-                              fillColor: Colors.indigo[50], 
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedService,
+                              hint: const Text('Service Type'),
+                              decoration: InputDecoration(filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)),
+                              items: const [
+                                DropdownMenuItem(value: 'Print Text', child: Text('Print Text')),
+                                DropdownMenuItem(value: 'Print Photo', child: Text('Print Photo')),
+                                DropdownMenuItem(value: 'Xerox', child: Text('Xerox')),
+                                DropdownMenuItem(value: 'Scan', child: Text('Scan')),
+                              ],
+                              onChanged: (newValue) { setStateDialog(() => selectedService = newValue); calculateTotal(); },
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: TextField(
+                              controller: docController,
+                              decoration: InputDecoration(labelText: 'Document Type', hintText: 'e.g. Modules', filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedSize,
+                              hint: const Text('Paper Size'),
+                              decoration: InputDecoration(filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)),
+                              items: const [
+                                DropdownMenuItem(value: 'Short', child: Text('Short')),
+                                DropdownMenuItem(value: 'Long', child: Text('Long')),
+                                DropdownMenuItem(value: 'A4', child: Text('A4')),
+                              ],
+                              onChanged: (newValue) { setStateDialog(() => selectedSize = newValue); calculateTotal(); },
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: selectedColor,
+                              hint: const Text('Ink Color'),
+                              decoration: InputDecoration(filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)),
+                              items: const [
+                                DropdownMenuItem(value: 'Black & White', child: Text('Black & White')),
+                                DropdownMenuItem(value: 'Colored', child: Text('Colored')),
+                              ],
+                              onChanged: (newValue) { setStateDialog(() => selectedColor = newValue); calculateTotal(); },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: TextField(
+                              controller: pagesController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) => calculateTotal(), 
+                              decoration: InputDecoration(labelText: 'Pages', filled: true, fillColor: const Color(0xFFF8FAFC), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none)),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: priceController,
+                              readOnly: true, // User cannot edit this, it is auto-calculated
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue[700]),
+                              decoration: InputDecoration(
+                                labelText: 'Total (₱)', 
+                                filled: true, 
+                                fillColor: Colors.blue.withOpacity(0.05), 
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200))
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context), 
-                  child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
+                  child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500], fontWeight: FontWeight.w600)),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(colors: [Colors.cyan, Colors.pinkAccent]),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[600], 
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12)
                   ),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      createOrder(
-                        nameController.text,
-                        selectedService ?? 'N/A',
-                        docController.text,
-                        pagesController.text,
-                        selectedColor ?? 'N/A',
-                        priceController.text,
-                        orderStatus,
-                        phoneController.text, 
-                      );
-                    },
-                    child: const Text('Submit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Pass the data to our API function
+                    createOrder(
+                      nameController.text, selectedService ?? 'N/A', docController.text,
+                      pagesController.text, selectedColor ?? 'N/A', priceController.text,
+                      orderStatus
+                    );
+                  },
+                  child: const Text('Create Order', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -614,77 +622,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
-  // Logout Confirmation Dialog
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: const Text('Confirm Logout'),
-          content: const Text('Are you sure you want to log out?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), 
-              child: Text('Cancel', style: TextStyle(color: Colors.grey[800], fontWeight: FontWeight.bold)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); 
-                Navigator.pushReplacement(
-                  context, 
-                  MaterialPageRoute(builder: (context) => const LoginScreen()), 
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pinkAccent, 
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: const Text('Logout', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-  // Main Dashboard UI
   @override
   Widget build(BuildContext context) {
+    // Dynamically count dashboard stats from the array
+    int totalOrders = orders.length;
+    int pendingCount = orders.where((o) => o['order_status'] == 'Pending').length;
+    int printingCount = orders.where((o) => o['order_status'] == 'Printing').length;
+    int doneCount = orders.where((o) => o['order_status'] == 'Done').length;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
-        title: const Text(
-          'Printing Services Dashboard',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.indigo[800],
+        title: const Text('Printing Services Dashboard', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.5)),
+        backgroundColor: Colors.blueGrey[900],
         elevation: 0,
         actions: [
+          // AI AGENT BUTTON
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+            child: ElevatedButton.icon(
+              onPressed: showAIInsights,
+              icon: const Icon(Icons.auto_awesome, size: 18),
+              label: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.purple[500],
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Logout',
             onPressed: () {
-              _showLogoutDialog();
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  title: Text('Logout', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
+                  content: Text('Are you sure you want to log out?', style: TextStyle(color: Colors.blueGrey[700])),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey[800], elevation: 0),
+                      onPressed: () {
+                        Navigator.pop(context); 
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                      },
+                      child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                )
+              );
             },
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
         ],
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator(color: Colors.blue[600]))
           : Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    children: [
+                      _buildSummaryCard('Total Orders', totalOrders.toString(), Icons.receipt, Colors.blueGrey[700]!),
+                      const SizedBox(width: 16),
+                      _buildSummaryCard('Pending', pendingCount.toString(), Icons.pending_actions, Colors.orange[700]!),
+                      const SizedBox(width: 16),
+                      _buildSummaryCard('Printing', printingCount.toString(), Icons.print, Colors.blue[600]!),
+                      const SizedBox(width: 16),
+                      _buildSummaryCard('Done', doneCount.toString(), Icons.check_circle, Colors.green[600]!),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   Expanded(
                     child: Card(
                       color: Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: LayoutBuilder(
@@ -696,45 +717,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 child: ConstrainedBox(
                                   constraints: BoxConstraints(minWidth: constraints.maxWidth),
                                   child: DataTable(
-                                    headingRowColor: WidgetStateProperty.all(Colors.indigo[50]),
+                                    headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                                    headingTextStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[700]),
+                                    dataRowColor: WidgetStateProperty.all(Colors.white),
+                                    dividerThickness: 1,
                                     columnSpacing: 40.0,
                                     columns: const [
-                                      DataColumn(label: Text('Customer', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Print Type', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Document', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Pages', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Color', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Price', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                                      DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+                                      DataColumn(label: Text('Customer')),
+                                      DataColumn(label: Text('Service')),
+                                      DataColumn(label: Text('Document')),
+                                      DataColumn(label: Text('Pages')),
+                                      DataColumn(label: Text('Total')),
+                                      DataColumn(label: Text('Status')),
+                                      DataColumn(label: Text('Actions')),
                                     ],
                                     rows: orders.map<DataRow>((order) {
                                       return DataRow(
                                         cells: [
-                                          DataCell(Text(order['customer_name'].toString())),
+                                          DataCell(Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.w500))),
                                           DataCell(Text(order['service_type'] ?? 'N/A')),
                                           DataCell(Text(order['document_type'].toString())),
                                           DataCell(Text(order['page_count'].toString())),
-                                          DataCell(Text(order['color_type'].toString())),
-                                          DataCell(Text('₱ ${order['total_price']}')),
+                                          DataCell(Text('₱ ${order['total_price']}', style: const TextStyle(fontWeight: FontWeight.w600))),
                                           DataCell(
-                                            DropdownButton<String>(
-                                              value: order['order_status'].toString(),
-                                              focusColor: Colors.transparent,
-                                              underline: const SizedBox(),
-                                              items: <String>['Pending', 'Printing', 'Done']
-                                                  .map<DropdownMenuItem<String>>((String value) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                );
-                                              }).toList(),
-                                              //
-                                              onChanged: (String? newValue) {
-                                                if (newValue != null) {
-                                                  updateOrderStatus(order, newValue); 
-                                                }
-                                              },
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: _getStatusBgColor(order['order_status'].toString()),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: DropdownButton<String>(
+                                                value: order['order_status'].toString(),
+                                                focusColor: Colors.transparent,
+                                                underline: const SizedBox(),
+                                                icon: Icon(Icons.arrow_drop_down, size: 16, color: _getStatusTextColor(order['order_status'].toString())),
+                                                style: TextStyle(
+                                                  color: _getStatusTextColor(order['order_status'].toString()),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13
+                                                ),
+                                                items: <String>['Pending', 'Printing', 'Done'].map<DropdownMenuItem<String>>((String value) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: value, 
+                                                    child: Text(value, style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.normal))
+                                                  );
+                                                }).toList(),
+                                                onChanged: (String? newValue) {
+                                                  if (newValue != null) updateOrderStatus(order, newValue); 
+                                                },
+                                              ),
                                             ),
                                           ),
                                           DataCell(
@@ -742,28 +773,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 IconButton(
-                                                  icon: const Icon(Icons.receipt, color: Colors.blue),
-                                                  tooltip: 'View Receipt',
-                                                  onPressed: () {
-                                                    showReceiptDialog(order); 
-                                                  },
+                                                  icon: Icon(Icons.receipt_long, color: Colors.blue[600]),
+                                                  tooltip: 'Digital Receipt',
+                                                  onPressed: () => showReceiptDialog(order),
                                                 ),
                                                 IconButton(
-                                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                                  icon: Icon(Icons.delete_outline, color: Colors.red[400]),
                                                   tooltip: 'Delete Order',
                                                   onPressed: () {
                                                     showDialog(
                                                       context: context,
                                                       builder: (context) => AlertDialog(
-                                                        title: const Text('Delete Order'),
-                                                        content: const Text('Are you sure you want to delete this order?'),
+                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                        title: Text('Delete Order', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
+                                                        content: Text('Are you sure you want to permanently delete this order?', style: TextStyle(color: Colors.blueGrey[700])),
                                                         actions: [
-                                                          TextButton(
-                                                            onPressed: () => Navigator.pop(context),
-                                                            child: const Text('Cancel'),
-                                                          ),
+                                                          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
                                                           ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600], elevation: 0),
                                                             onPressed: () {
                                                               Navigator.pop(context);
                                                               deleteOrder(order['order_id'].toString());
@@ -793,11 +820,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ],
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.indigo[800],
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.blue[600],
         foregroundColor: Colors.white,
+        elevation: 2,
         onPressed: showCreateOrderDialog,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('New Order', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(String title, String count, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200)
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(color: Colors.blueGrey[500], fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(count, style: TextStyle(color: Colors.blueGrey[900], fontSize: 24, fontWeight: FontWeight.bold)),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
