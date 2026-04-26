@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:fl_chart/fl_chart.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -24,8 +25,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-// Login Screen
+// ---------------------------------------------------------
+// LOGIN SCREEN
+// ---------------------------------------------------------
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -38,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
 
-  // Sends credentials to PHP backend to verify the admin
   Future<void> login() async {
     try {
       final response = await http.post(
@@ -150,7 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-
+// ---------------------------------------------------------
+// MAIN DASHBOARD SCREEN
+// ---------------------------------------------------------
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -163,17 +166,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoading = true;
 
   // Google Gemini API key
-  final String apiKey = '';
+  final String apiKey = 'AIzaSyDCx4pyDa2rL4FLPFzYv_lsq6fHy7lcXfw';
 
   @override
   void initState() {
     super.initState();
-    fetchOrders(); // Load the database table immediately when the screen opens
+    fetchOrders(); 
   }
 
-  // Packages of current database state and sends it to the Gemini AI Agent
+  // Gathers the current database data and sends it to the Gemini AI Agent
   Future<void> showAIInsights() async {
-    // Show a loading circle so the user knows the AI is "thinking"
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -181,7 +183,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
 
     try {
-      // Calculate total expected revenue dynamically to feed to the AI prompt
       double estimatedRevenue = 0;
       for (var order in orders) {
         estimatedRevenue += double.tryParse(order['total_price'].toString()) ?? 0.0;
@@ -200,15 +201,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       3. Tell me exactly which specific order I should print next to be the most efficient. Use the Customer's Name (NEVER use order ID numbers), and explain why in plain English.
       ''';
 
-      // Connect to Google's lastest flash model
       final model = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
       final content = [Content.text(prompt)];
       final response = await model.generateContent(content);
 
-      // Close the loading circle
       Navigator.pop(context);
 
-      // Display the AI's analysis in a clean dialog box
+      // Display the AI's analysis WITH THE PIE CHART inside the dialog!
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -221,7 +220,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text('AI Assistant Insights', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold, fontSize: 18)),
             ],
           ),
-          content: Text(response.text ?? 'I could not analyze the data right now.', style: TextStyle(color: Colors.blueGrey[800], fontSize: 14, height: 1.5)),
+          content: SingleChildScrollView(
+            child: SizedBox(
+              width: 500, // Makes the popup wide enough to look good
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 1. The Visual Graph
+                  QueuePieChart(orders: orders),
+                  
+                  const SizedBox(height: 16),
+                  Divider(color: Colors.grey.shade300),
+                  const SizedBox(height: 16),
+                  
+                  // 2. The AI Text Analysis
+                  Text(
+                    response.text ?? 'I could not analyze the data right now.', 
+                    style: TextStyle(color: Colors.blueGrey[800], fontSize: 14, height: 1.5)
+                  ),
+                ],
+              ),
+            ),
+          ),
           actions: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.purple[600], elevation: 0),
@@ -232,7 +252,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     } catch (e) {
-      Navigator.pop(context); // Close loading circle on error
+      Navigator.pop(context); 
       print("AI ACTUAL ERROR: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -244,7 +264,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Grabs the latest list of orders from MySQL
   Future<void> fetchOrders() async {
     try {
       final response = await http.get(Uri.parse('http://localhost/printing-services-final/printing_api/get_orders.php'));
@@ -259,7 +278,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Sends a new order payload to the backend
   Future<void> createOrder(
     String customerName, String serviceType, String documentType, 
     String pageCount, String colorType, String totalPrice, 
@@ -279,14 +297,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text('Order successfully added', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green[700], behavior: SnackBarBehavior.floating),
         );
-      fetchOrders(); // Refresh the table automatically
+      fetchOrders(); 
       }
     } catch (e) {
       print("Failed to connect to server: $e");
     }
   }
 
-  // Updates the status dropdown (Pending/Printing/Done)
   Future<void> updateOrderStatus(Map order, String status) async {
     try {
       final response = await http.post(
@@ -294,7 +311,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: {'order_id': order['order_id'].toString(), 'order_status': status},
       );
       if (response.statusCode == 200) {
-        fetchOrders(); // Refresh UI to show new status color
+        fetchOrders(); 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: const Text('Status updated'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.blueGrey[800])
         );
@@ -304,7 +321,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Completely removes an order from the database
   Future<void> deleteOrder(String id) async {
     try {
       final response = await http.post(
@@ -322,7 +338,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Sets the background pill color based on status
   Color _getStatusBgColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange.withOpacity(0.1);
@@ -332,7 +347,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Sets the text color based on status
   Color _getStatusTextColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange[800]!;
@@ -342,7 +356,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Pops up the digital receipt for a specific order
   void showReceiptDialog(Map order) {
     showDialog(
       context: context,
@@ -427,7 +440,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Opens the form to add a new order and handles dynamic pricing logic
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController docController = TextEditingController();
@@ -437,7 +449,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String? selectedService;
     String? selectedSize;
     String? selectedColor;
-    String orderStatus = 'Pending'; // Default status for all new orders
+    String orderStatus = 'Pending'; 
 
     showDialog(
       context: context,
@@ -445,7 +457,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             
-            // Automatically updates the Total Price field based on dropdowns
             void calculateTotal() {
               double pricePerPage = 0.0;
               int pages = int.tryParse(pagesController.text) ?? 0;
@@ -573,7 +584,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             flex: 2,
                             child: TextField(
                               controller: priceController,
-                              readOnly: true, // User cannot edit this, it is auto-calculated
+                              readOnly: true, 
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue[700]),
                               decoration: InputDecoration(
                                 labelText: 'Total (₱)', 
@@ -605,7 +616,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    // Pass the data to our API function
                     createOrder(
                       nameController.text, selectedService ?? 'N/A', docController.text,
                       pagesController.text, selectedColor ?? 'N/A', priceController.text,
@@ -624,7 +634,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Dynamically count dashboard stats from the array
     int totalOrders = orders.length;
     int pendingCount = orders.where((o) => o['order_status'] == 'Pending').length;
     int printingCount = orders.where((o) => o['order_status'] == 'Printing').length;
@@ -637,7 +646,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.blueGrey[900],
         elevation: 0,
         actions: [
-          // AI AGENT BUTTON
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
             child: ElevatedButton.icon(
@@ -689,6 +697,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Top Summary Cards
                   Row(
                     children: [
                       _buildSummaryCard('Total Orders', totalOrders.toString(), Icons.receipt, Colors.blueGrey[700]!),
@@ -701,6 +710,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
+
+                  // The main Queue Data Table is now fully visible again!
                   Expanded(
                     child: Card(
                       color: Colors.white,
@@ -857,6 +868,95 @@ class _DashboardScreenState extends State<DashboardScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------
+// THE ULTIMATE VISUAL FEATURE: DUAL CHARTS (VOLUME & REVENUE)
+// ---------------------------------------------------------
+class QueuePieChart extends StatelessWidget {
+  final List<dynamic> orders;
+
+  const QueuePieChart({Key? key, required this.orders}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // 1. MATH FOR VOLUME (How many orders)
+    int textCount = orders.where((o) => o['service_type'] == 'Print Text').length;
+    int photoCount = orders.where((o) => o['service_type'] == 'Print Photo').length;
+    int xeroxCount = orders.where((o) => o['service_type'] == 'Xerox').length;
+    int scanCount = orders.where((o) => o['service_type'] == 'Scan').length;
+
+    // 2. MATH FOR REVENUE (How much money)
+    double textRev = 0, photoRev = 0, xeroxRev = 0, scanRev = 0;
+    for(var o in orders) {
+      double price = double.tryParse(o['total_price'].toString()) ?? 0;
+      if(o['service_type'] == 'Print Text') textRev += price;
+      else if(o['service_type'] == 'Print Photo') photoRev += price;
+      else if(o['service_type'] == 'Xerox') xeroxRev += price;
+      else if(o['service_type'] == 'Scan') scanRev += price;
+    }
+
+    if (orders.isEmpty) {
+      return const SizedBox(height: 150, child: Center(child: Text("No data available yet.", style: TextStyle(color: Colors.grey))));
+    }
+
+    return Container(
+      height: 250, 
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          // LEFT CHART: VOLUME POPULARITY
+          Expanded(
+            child: Column(
+              children: [
+                Text("Service Volume", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueGrey[800])),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 2, centerSpaceRadius: 30,
+                      sections: [
+                        if (textCount > 0) PieChartSectionData(color: Colors.blue[500], value: textCount.toDouble(), title: 'Text\n($textCount)', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (photoCount > 0) PieChartSectionData(color: Colors.purple[500], value: photoCount.toDouble(), title: 'Photo\n($photoCount)', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (xeroxCount > 0) PieChartSectionData(color: Colors.orange[500], value: xeroxCount.toDouble(), title: 'Xerox\n($xeroxCount)', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (scanCount > 0) PieChartSectionData(color: Colors.green[500], value: scanCount.toDouble(), title: 'Scan\n($scanCount)', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // A little divider line in the middle
+          Container(width: 1, color: Colors.grey.shade300, margin: const EdgeInsets.symmetric(horizontal: 8)),
+
+          // RIGHT CHART: REVENUE INCOME
+          Expanded(
+            child: Column(
+              children: [
+                Text("Revenue (₱)", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blueGrey[800])),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 2, centerSpaceRadius: 30,
+                      sections: [
+                        if (textRev > 0) PieChartSectionData(color: Colors.blue[400], value: textRev, title: '₱${textRev.toInt()}', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (photoRev > 0) PieChartSectionData(color: Colors.purple[400], value: photoRev, title: '₱${photoRev.toInt()}', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (xeroxRev > 0) PieChartSectionData(color: Colors.orange[400], value: xeroxRev, title: '₱${xeroxRev.toInt()}', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                        if (scanRev > 0) PieChartSectionData(color: Colors.green[400], value: scanRev, title: '₱${scanRev.toInt()}', radius: 55, titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
