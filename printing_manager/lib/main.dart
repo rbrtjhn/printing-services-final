@@ -40,6 +40,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
 
+  void _showLoginToast(String message, Color bgColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: bgColor,
+        width: 380, 
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 6,
+        duration: const Duration(seconds: 3),
+      )
+    );
+  }
+
   Future<void> login() async {
     try {
       final response = await http.post(
@@ -59,90 +80,91 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'], style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red[700]),
-          );
+          _showLoginToast(data['message'], Colors.red[700]!);
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Database connection error. Is XAMPP running?'), backgroundColor: Colors.red[700]),
-      );
+      _showLoginToast('Database connection error. Is XAMPP running?', Colors.red[700]!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
-      body: Center(
-        child: Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(32),
-          child: Container(
-            width: 400,
-            padding: const EdgeInsets.all(40.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.print, size: 60, color: Colors.blueGrey[800]),
-                const SizedBox(height: 16),
-                Text(
-                  'Printing Services',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5, color: Colors.blueGrey[900]),
-                ),
-                const SizedBox(height: 40),
-
-                TextField(
-                  controller: usernameController,
-                  decoration: InputDecoration(
-                    labelText: 'Username',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+    // ---> DYNAMIC BROWSER TAB ADDED HERE <---
+    return Title(
+      title: 'Login | Printing Services',
+      color: Colors.blueGrey,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6F8),
+        body: Center(
+          child: Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(32),
+            child: Container(
+              width: 400,
+              padding: const EdgeInsets.all(40.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.print, size: 60, color: Colors.blueGrey[800]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Printing Services',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5, color: Colors.blueGrey[900]),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 40),
 
-                TextField(
-                  controller: passwordController,
-                  obscureText: _isObscure,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (value) => login(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
-                    suffixIcon: IconButton(
-                      icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.blueGrey[400]),
-                      onPressed: () {
-                        setState(() { _isObscure = !_isObscure; });
-                      },
+                  TextField(
+                    controller: usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
                     ),
                   ),
-                ),
-                const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: _isObscure,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (value) => login(),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade600, width: 2)),
+                      suffixIcon: IconButton(
+                        icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility, color: Colors.blueGrey[400]),
+                        onPressed: () {
+                          setState(() { _isObscure = !_isObscure; });
+                        },
+                      ),
                     ),
-                    child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 40),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[600],
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -165,8 +187,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List orders = [];
   bool isLoading = true;
 
-  // Google Gemini API key
-  final String apiKey = 'AIzaSyDCx4pyDa2rL4FLPFzYv_lsq6fHy7lcXfw';
+  // 🚨 PASTE YOUR NEW GOOGLE GEMINI API KEY HERE 🚨
+  final String apiKey = 'AIzaSyCqsb-PWeSavD2XW1yGzSvxMrhO_yCOK-c';
 
   @override
   void initState() {
@@ -174,7 +196,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     fetchOrders(); 
   }
 
-  // Gathers the current database data and sends it to the Gemini AI Agent
+  void _showToast(String message, Color bgColor, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text(message, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: bgColor,
+        width: 320, 
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 6,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> showAIInsights() async {
     showDialog(
       context: context,
@@ -207,7 +249,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       Navigator.pop(context);
 
-      // Display the AI's analysis WITH THE PIE CHART inside the dialog!
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -222,18 +263,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           content: SingleChildScrollView(
             child: SizedBox(
-              width: 500, // Makes the popup wide enough to look good
+              width: 500, 
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 1. The Visual Graph
                   QueuePieChart(orders: orders),
-                  
                   const SizedBox(height: 16),
                   Divider(color: Colors.grey.shade300),
                   const SizedBox(height: 16),
-                  
-                  // 2. The AI Text Analysis
                   Text(
                     response.text ?? 'I could not analyze the data right now.', 
                     style: TextStyle(color: Colors.blueGrey[800], fontSize: 14, height: 1.5)
@@ -254,13 +291,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } catch (e) {
       Navigator.pop(context); 
       print("AI ACTUAL ERROR: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: $e', style: const TextStyle(color: Colors.white)), 
-          backgroundColor: Colors.red[900],
-          duration: const Duration(seconds: 8),
-        )
-      );
+      _showToast('Error connecting to AI Assistant.', Colors.red[800]!, Icons.error_outline);
     }
   }
 
@@ -294,10 +325,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       );
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Order successfully added', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green[700], behavior: SnackBarBehavior.floating),
-        );
-      fetchOrders(); 
+        _showToast('New order successfully added', Colors.green[600]!, Icons.check_circle);
+        fetchOrders(); 
       }
     } catch (e) {
       print("Failed to connect to server: $e");
@@ -312,9 +341,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       if (response.statusCode == 200) {
         fetchOrders(); 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Status updated'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.blueGrey[800])
-        );
+        _showToast('Order status updated to $status', Colors.blueGrey[800]!, Icons.info_outline);
       }
     } catch (e) {
       print("Error updating status: $e");
@@ -329,9 +356,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       if (response.statusCode == 200) {
         fetchOrders();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Order removed'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.blueGrey[800])
-        );
+        _showToast('Order permanently removed', Colors.red[600]!, Icons.delete_outline);
       }
     } catch (e) {
       print("Error deleting order: $e");
@@ -340,19 +365,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Color _getStatusBgColor(String status) {
     switch (status) {
-      case 'Pending': return Colors.orange.withOpacity(0.1);
-      case 'Printing': return Colors.blue.withOpacity(0.1);
-      case 'Done': return Colors.green.withOpacity(0.1);
-      default: return Colors.grey.withOpacity(0.1);
+      case 'Pending': return Colors.orange.shade100;
+      case 'Printing': return Colors.blue.shade100;
+      case 'Done': return Colors.green.shade100;
+      default: return Colors.grey.shade100;
     }
   }
 
   Color _getStatusTextColor(String status) {
     switch (status) {
-      case 'Pending': return Colors.orange[800]!;
-      case 'Printing': return Colors.blue[700]!;
-      case 'Done': return Colors.green[700]!;
-      default: return Colors.grey[800]!;
+      case 'Pending': return Colors.orange.shade900;
+      case 'Printing': return Colors.blue.shade900;
+      case 'Done': return Colors.green.shade900;
+      default: return Colors.grey.shade900;
     }
   }
 
@@ -639,205 +664,229 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int printingCount = orders.where((o) => o['order_status'] == 'Printing').length;
     int doneCount = orders.where((o) => o['order_status'] == 'Done').length;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
-      appBar: AppBar(
-        title: const Text('Printing Services Dashboard', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.5)),
-        backgroundColor: Colors.blueGrey[900],
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-            child: ElevatedButton.icon(
-              onPressed: showAIInsights,
-              icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple[500],
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    // ---> DYNAMIC BROWSER TAB ADDED HERE <---
+    return Title(
+      title: 'Dashboard | Printing Services',
+      color: Colors.blueGrey,
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF4F6F8),
+        appBar: AppBar(
+          title: const Text('Printing Services Dashboard', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: -0.5)),
+          backgroundColor: Colors.blueGrey[900],
+          elevation: 0,
+          actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: showAIInsights,
+                icon: const Icon(Icons.auto_awesome, size: 18),
+                label: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple[500],
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Logout',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  title: Text('Logout', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
-                  content: Text('Are you sure you want to log out?', style: TextStyle(color: Colors.blueGrey[700])),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey[800], elevation: 0),
-                      onPressed: () {
-                        Navigator.pop(context); 
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-                      },
-                      child: const Text('Logout', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                )
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator(color: Colors.blue[600]))
-          : Padding(
-              padding: const EdgeInsets.all(32.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Top Summary Cards
-                  Row(
-                    children: [
-                      _buildSummaryCard('Total Orders', totalOrders.toString(), Icons.receipt, Colors.blueGrey[700]!),
-                      const SizedBox(width: 16),
-                      _buildSummaryCard('Pending', pendingCount.toString(), Icons.pending_actions, Colors.orange[700]!),
-                      const SizedBox(width: 16),
-                      _buildSummaryCard('Printing', printingCount.toString(), Icons.print, Colors.blue[600]!),
-                      const SizedBox(width: 16),
-                      _buildSummaryCard('Done', doneCount.toString(), Icons.check_circle, Colors.green[600]!),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.logout, color: Colors.white),
+              tooltip: 'Logout',
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    title: Text('Logout', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
+                    content: Text('Are you sure you want to log out?', style: TextStyle(color: Colors.blueGrey[700])),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey[800], elevation: 0),
+                        onPressed: () {
+                          Navigator.pop(context); 
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+                        },
+                        child: const Text('Logout', style: TextStyle(color: Colors.white)),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // The main Queue Data Table is now fully visible again!
-                  Expanded(
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              scrollDirection: Axis.vertical,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                                  child: DataTable(
-                                    headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
-                                    headingTextStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[700]),
-                                    dataRowColor: WidgetStateProperty.all(Colors.white),
-                                    dividerThickness: 1,
-                                    columnSpacing: 40.0,
-                                    columns: const [
-                                      DataColumn(label: Text('Customer')),
-                                      DataColumn(label: Text('Service')),
-                                      DataColumn(label: Text('Document')),
-                                      DataColumn(label: Text('Pages')),
-                                      DataColumn(label: Text('Total')),
-                                      DataColumn(label: Text('Status')),
-                                      DataColumn(label: Text('Actions')),
-                                    ],
-                                    rows: orders.map<DataRow>((order) {
-                                      return DataRow(
-                                        cells: [
-                                          DataCell(Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.w500))),
-                                          DataCell(Text(order['service_type'] ?? 'N/A')),
-                                          DataCell(Text(order['document_type'].toString())),
-                                          DataCell(Text(order['page_count'].toString())),
-                                          DataCell(Text('₱ ${order['total_price']}', style: const TextStyle(fontWeight: FontWeight.w600))),
+                  )
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: isLoading
+            ? Center(child: CircularProgressIndicator(color: Colors.blue[600]))
+            : Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        _buildSummaryCard('Total Orders', totalOrders.toString(), Icons.receipt, Colors.blueGrey[700]!),
+                        const SizedBox(width: 16),
+                        _buildSummaryCard('Pending', pendingCount.toString(), Icons.pending_actions, Colors.orange[700]!),
+                        const SizedBox(width: 16),
+                        _buildSummaryCard('Printing', printingCount.toString(), Icons.print, Colors.blue[600]!),
+                        const SizedBox(width: 16),
+                        _buildSummaryCard('Done', doneCount.toString(), Icons.check_circle, Colors.green[600]!),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: Card(
+                        color: Colors.white,
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.grey.shade200)),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                scrollDirection: Axis.vertical,
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                    child: DataTable(
+                                      headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
+                                      headingTextStyle: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey[700]),
+                                      dataRowColor: WidgetStateProperty.all(Colors.white),
+                                      dividerThickness: 1,
+                                      columnSpacing: 40.0,
+                                      columns: const [
+                                        DataColumn(label: Text('Customer')),
+                                        DataColumn(label: Text('Service')),
+                                        DataColumn(label: Text('Document')),
+                                        DataColumn(label: SizedBox(width: 60, child: Center(child: Text('Pages')))),
+                                        DataColumn(label: Text('Total')),
+                                        DataColumn(label: SizedBox(width: 105, child: Center(child: Text('Status')))),
+                                        DataColumn(label: SizedBox(width: 100, child: Center(child: Text('Actions')))),
+                                      ],
+                                      rows: orders.map<DataRow>((order) {
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.w500))),
+                                            DataCell(Text(order['service_type'] ?? 'N/A')),
+                                            DataCell(Text(order['document_type'].toString())),
+                                            // 1. Centered Pages (Width 60)
+                                            DataCell(SizedBox(width: 60, child: Center(child: Text(order['page_count'].toString())))),
+                                            DataCell(Text('₱ ${order['total_price']}', style: const TextStyle(fontWeight: FontWeight.w600))),
+                                          // 2. Centered Status Pill (Width 105 to match header)
                                           DataCell(
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: _getStatusBgColor(order['order_status'].toString()),
-                                                borderRadius: BorderRadius.circular(20),
-                                              ),
-                                              child: DropdownButton<String>(
-                                                value: order['order_status'].toString(),
-                                                focusColor: Colors.transparent,
-                                                underline: const SizedBox(),
-                                                icon: Icon(Icons.arrow_drop_down, size: 16, color: _getStatusTextColor(order['order_status'].toString())),
-                                                style: TextStyle(
-                                                  color: _getStatusTextColor(order['order_status'].toString()),
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13
+                                            SizedBox(
+                                              width: 105, 
+                                              child: Center(
+                                                child: Container(
+                                                  height: 32, 
+                                                  width: 100, 
+                                                  alignment: Alignment.center,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                                  decoration: BoxDecoration(
+                                                    color: _getStatusBgColor(order['order_status'].toString()),
+                                                    borderRadius: BorderRadius.circular(16),
+                                                    border: Border.all(color: _getStatusTextColor(order['order_status'].toString()).withOpacity(0.3), width: 1),
+                                                  ),
+                                                  child: DropdownButtonHideUnderline(
+                                                    child: DropdownButton<String>(
+                                                      isExpanded: true, 
+                                                      alignment: AlignmentDirectional.center, 
+                                                      dropdownColor: Colors.white,
+                                                      value: order['order_status'].toString(),
+                                                      focusColor: Colors.transparent,
+                                                      icon: Icon(Icons.arrow_drop_down, size: 16, color: _getStatusTextColor(order['order_status'].toString())),
+                                                      style: TextStyle(
+                                                        color: _getStatusTextColor(order['order_status'].toString()),
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 12 
+                                                      ),
+                                                      items: <String>['Pending', 'Printing', 'Done'].map<DropdownMenuItem<String>>((String value) {
+                                                        return DropdownMenuItem<String>(
+                                                          value: value, 
+                                                          child: Center(child: Text(value, style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.normal)))
+                                                        );
+                                                      }).toList(),
+                                                      onChanged: (String? newValue) {
+                                                        if (newValue != null) updateOrderStatus(order, newValue); 
+                                                      },
+                                                    ),
+                                                  ),
                                                 ),
-                                                items: <String>['Pending', 'Printing', 'Done'].map<DropdownMenuItem<String>>((String value) {
-                                                  return DropdownMenuItem<String>(
-                                                    value: value, 
-                                                    child: Text(value, style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.normal))
-                                                  );
-                                                }).toList(),
-                                                onChanged: (String? newValue) {
-                                                  if (newValue != null) updateOrderStatus(order, newValue); 
-                                                },
                                               ),
                                             ),
                                           ),
+
+                                          // 3. Centered Actions (Width 100 to match header)
                                           DataCell(
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  icon: Icon(Icons.receipt_long, color: Colors.blue[600]),
-                                                  tooltip: 'Digital Receipt',
-                                                  onPressed: () => showReceiptDialog(order),
-                                                ),
-                                                IconButton(
-                                                  icon: Icon(Icons.delete_outline, color: Colors.red[400]),
-                                                  tooltip: 'Delete Order',
-                                                  onPressed: () {
-                                                    showDialog(
-                                                      context: context,
-                                                      builder: (context) => AlertDialog(
-                                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                        title: Text('Delete Order', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
-                                                        content: Text('Are you sure you want to permanently delete this order?', style: TextStyle(color: Colors.blueGrey[700])),
-                                                        actions: [
-                                                          TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
-                                                          ElevatedButton(
-                                                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600], elevation: 0),
-                                                            onPressed: () {
-                                                              Navigator.pop(context);
-                                                              deleteOrder(order['order_id'].toString());
-                                                            },
-                                                            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                                            SizedBox(
+                                              width: 100,
+                                              child: Center(
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min, // Keeps icons tightly centered
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(Icons.receipt_long, color: Colors.blue[600]),
+                                                      tooltip: 'Digital Receipt',
+                                                      onPressed: () => showReceiptDialog(order),
+                                                    ),
+                                                    IconButton(
+                                                      icon: Icon(Icons.delete_outline, color: Colors.red[400]),
+                                                      tooltip: 'Delete Order',
+                                                      onPressed: () {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (context) => AlertDialog(
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                            title: Text('Delete Order', style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.bold)),
+                                                            content: Text('Are you sure you want to permanently delete this order?', style: TextStyle(color: Colors.blueGrey[700])),
+                                                            actions: [
+                                                              TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel', style: TextStyle(color: Colors.blueGrey[500]))),
+                                                              ElevatedButton(
+                                                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red[600], elevation: 0),
+                                                                onPressed: () {
+                                                                  Navigator.pop(context);
+                                                                  deleteOrder(order['order_id'].toString());
+                                                                },
+                                                                child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                                                              ),
+                                                            ],
                                                           ),
-                                                        ],
-                                                      ),
-                                                    );
-                                                  },
+                                                        );
+                                                      },
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
+                                              ),
                                             ),
                                           ),
                                         ],
                                       );
                                     }).toList(),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }
+                              );
+                            }
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.blue[600],
-        foregroundColor: Colors.white,
-        elevation: 2,
-        onPressed: showCreateOrderDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('New Order', style: TextStyle(fontWeight: FontWeight.bold)),
+        floatingActionButton: FloatingActionButton.extended(
+          backgroundColor: Colors.blue[600],
+          foregroundColor: Colors.white,
+          elevation: 2,
+          onPressed: showCreateOrderDialog,
+          icon: const Icon(Icons.add),
+          label: const Text('New Order', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
       ),
     );
   }
@@ -883,13 +932,11 @@ class QueuePieChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. MATH FOR VOLUME (How many orders)
     int textCount = orders.where((o) => o['service_type'] == 'Print Text').length;
     int photoCount = orders.where((o) => o['service_type'] == 'Print Photo').length;
     int xeroxCount = orders.where((o) => o['service_type'] == 'Xerox').length;
     int scanCount = orders.where((o) => o['service_type'] == 'Scan').length;
 
-    // 2. MATH FOR REVENUE (How much money)
     double textRev = 0, photoRev = 0, xeroxRev = 0, scanRev = 0;
     for(var o in orders) {
       double price = double.tryParse(o['total_price'].toString()) ?? 0;
@@ -908,7 +955,6 @@ class QueuePieChart extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: [
-          // LEFT CHART: VOLUME POPULARITY
           Expanded(
             child: Column(
               children: [
@@ -931,10 +977,8 @@ class QueuePieChart extends StatelessWidget {
             ),
           ),
           
-          // A little divider line in the middle
           Container(width: 1, color: Colors.grey.shade300, margin: const EdgeInsets.symmetric(horizontal: 8)),
 
-          // RIGHT CHART: REVENUE INCOME
           Expanded(
             child: Column(
               children: [
