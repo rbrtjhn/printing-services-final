@@ -25,9 +25,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------
-// LOGIN SCREEN
-// ---------------------------------------------------------
+
+// Login
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -61,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Login function
   Future<void> login() async {
     try {
       final response = await http.post(
@@ -70,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
           'password': passwordController.text,
         },
       );
-
+      
+      // Check if the response is successful
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
@@ -88,9 +89,9 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+// UI for login
   @override
   Widget build(BuildContext context) {
-    // ---> DYNAMIC BROWSER TAB ADDED HERE <---
     return Title(
       title: 'Login | Printing Services',
       color: Colors.blueGrey,
@@ -115,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
 
+                  // Username and password fields
                   TextField(
                     controller: usernameController,
                     decoration: InputDecoration(
@@ -149,7 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-
+                  
+                  // Login button
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -173,9 +176,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// ---------------------------------------------------------
-// MAIN DASHBOARD SCREEN
-// ---------------------------------------------------------
+
+// Dashboard
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -187,8 +189,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List orders = [];
   bool isLoading = true;
 
-  // 🚨 PASTE YOUR NEW GOOGLE GEMINI API KEY HERE 🚨
-  final String apiKey = '';
+  // Google Gemini API Key
+  final String apiKey = 'AIzaSyCqsb-PWeSavD2XW1yGzSvxMrhO_yCOK-c';
 
   @override
   void initState() {
@@ -217,6 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // AI Insights function
   Future<void> showAIInsights() async {
     showDialog(
       context: context,
@@ -224,6 +227,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context) => const Center(child: CircularProgressIndicator(color: Colors.purple)),
     );
 
+    // Generate AI insights
     try {
       double estimatedRevenue = 0;
       for (var order in orders) {
@@ -231,6 +235,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
       int pending = orders.where((o) => o['order_status'] == 'Pending').length;
 
+      // A detailed prompt for the AI model
       String prompt = '''
       You are an AI Business Assistant for a Printing Services shop. 
       I have ${orders.length} total orders, with $pending still pending.
@@ -242,13 +247,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       2. Identify any large orders that might slow down the printer.
       3. Tell me exactly which specific order I should print next to be the most efficient. Use the Customer's Name (NEVER use order ID numbers), and explain why in plain English.
       ''';
-
+      
+      // The AI model will analyze the data and provide insights based on the prompt
       final model = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
       final content = [Content.text(prompt)];
       final response = await model.generateContent(content);
 
+      // Close the loading dialog before showing insights
       Navigator.pop(context);
 
+      // Display the insights in a dialog with a pie chart of the queue
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -295,6 +303,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Fetch orders from API
   Future<void> fetchOrders() async {
     try {
       final response = await http.get(Uri.parse('http://localhost/printing-services-final/printing_api/get_orders.php'));
@@ -309,6 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Create order function
   Future<void> createOrder(
     String customerName, String serviceType, String documentType, 
     String pageCount, String colorType, String totalPrice, 
@@ -325,7 +335,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       );
       if (response.statusCode == 200) {
-        _showToast('New order successfully added', Colors.green[600]!, Icons.check_circle);
+        _showToast('Order successfully added', Colors.green[600]!, Icons.check_circle);
         fetchOrders(); 
       }
     } catch (e) {
@@ -333,6 +343,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Update order status function
   Future<void> updateOrderStatus(Map order, String status) async {
     try {
       final response = await http.post(
@@ -348,6 +359,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Delete order function
   Future<void> deleteOrder(String id) async {
     try {
       final response = await http.post(
@@ -356,13 +368,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       if (response.statusCode == 200) {
         fetchOrders();
-        _showToast('Order permanently removed', Colors.red[600]!, Icons.delete_outline);
+        _showToast('Order removed', Colors.red[600]!, Icons.delete_outline);
       }
     } catch (e) {
       print("Error deleting order: $e");
     }
   }
 
+  // Helper functions for status colors
   Color _getStatusBgColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange.shade100;
@@ -372,6 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Helper functions for status text colors
   Color _getStatusTextColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange.shade900;
@@ -381,6 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Receipt dialog function
   void showReceiptDialog(Map order) {
     showDialog(
       context: context,
@@ -465,27 +480,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Create Order dialog function
   void showCreateOrderDialog() {
     TextEditingController nameController = TextEditingController();
     TextEditingController docController = TextEditingController();
     TextEditingController pagesController = TextEditingController();
     TextEditingController priceController = TextEditingController();
     
+    // Dropdown selections
     String? selectedService;
     String? selectedSize;
     String? selectedColor;
     String orderStatus = 'Pending'; 
 
+    // Show the dialog for creating a new order
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
-            
+
+            // Function to calculate total price based on selections
             void calculateTotal() {
               double pricePerPage = 0.0;
               int pages = int.tryParse(pagesController.text) ?? 0;
-
+              
+              // Pricing logic based on service, size, and color
               if (selectedService == 'Print Text') {
                 if (selectedColor == 'Black & White') {
                   if (selectedSize == 'Short') pricePerPage = 2.0;
@@ -502,9 +522,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               } else if (selectedService == 'Scan') {
                 pricePerPage = 5.0; 
               }
-
-              double total = pricePerPage * pages;
               
+              // Calculate total price
+              double total = pricePerPage * pages;
+
+              // Update the total price field in the dialog
               setStateDialog(() {
                 if (total > 0) {
                   priceController.text = total.toStringAsFixed(2);
@@ -514,6 +536,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               });
             }
 
+            // New Order Form UI
             return AlertDialog(
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -612,7 +635,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               readOnly: true, 
                               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue[700]),
                               decoration: InputDecoration(
-                                labelText: 'Total (₱)', 
+                                labelText: 'Total Price', 
                                 filled: true, 
                                 fillColor: Colors.blue.withOpacity(0.05), 
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.blue.shade200)),
@@ -657,6 +680,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Main build function for the dashboard
   @override
   Widget build(BuildContext context) {
     int totalOrders = orders.length;
@@ -664,7 +688,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     int printingCount = orders.where((o) => o['order_status'] == 'Printing').length;
     int doneCount = orders.where((o) => o['order_status'] == 'Done').length;
 
-    // ---> DYNAMIC BROWSER TAB ADDED HERE <---
+    // Dashboard UI with summary cards, order table, and actions
     return Title(
       title: 'Dashboard | Printing Services',
       color: Colors.blueGrey,
@@ -774,10 +798,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             DataCell(Text(order['customer_name'].toString(), style: const TextStyle(fontWeight: FontWeight.w500))),
                                             DataCell(Text(order['service_type'] ?? 'N/A')),
                                             DataCell(Text(order['document_type'].toString())),
-                                            // 1. Centered Pages (Width 60)
+
+                                            // Centered Page Count with fixed width to prevent layout shifts 
                                             DataCell(SizedBox(width: 60, child: Center(child: Text(order['page_count'].toString())))),
                                             DataCell(Text('₱ ${order['total_price']}', style: const TextStyle(fontWeight: FontWeight.w600))),
-                                          // 2. Centered Status Pill (Width 105 to match header)
+                                          
+                                          // Status with colored background and dropdown for updates
                                           DataCell(
                                             SizedBox(
                                               width: 105, 
@@ -821,7 +847,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             ),
                                           ),
 
-                                          // 3. Centered Actions (Width 100 to match header)
+                                          // Actions with icons for receipt and delete, centered and spaced
                                           DataCell(
                                             SizedBox(
                                               width: 100,
@@ -891,6 +917,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  // Helper function to build summary cards for the dashboard
   Widget _buildSummaryCard(String title, String count, IconData icon, Color color) {
     return Expanded(
       child: Container(
@@ -922,14 +949,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 }
 
-// ---------------------------------------------------------
-// THE ULTIMATE VISUAL FEATURE: DUAL CHARTS (VOLUME & REVENUE)
-// ---------------------------------------------------------
+
+// Widget for displaying pie charts of service volume and revenue distribution
 class QueuePieChart extends StatelessWidget {
   final List<dynamic> orders;
 
+  // Constructor to initialize the widget with the list of orders
   const QueuePieChart({Key? key, required this.orders}) : super(key: key);
 
+  // Build function to create the UI for the pie charts based on the order data
   @override
   Widget build(BuildContext context) {
     int textCount = orders.where((o) => o['service_type'] == 'Print Text').length;
@@ -937,6 +965,7 @@ class QueuePieChart extends StatelessWidget {
     int xeroxCount = orders.where((o) => o['service_type'] == 'Xerox').length;
     int scanCount = orders.where((o) => o['service_type'] == 'Scan').length;
 
+    // Calculate revenue for each service type by summing the total_price of orders for that type
     double textRev = 0, photoRev = 0, xeroxRev = 0, scanRev = 0;
     for(var o in orders) {
       double price = double.tryParse(o['total_price'].toString()) ?? 0;
@@ -946,10 +975,12 @@ class QueuePieChart extends StatelessWidget {
       else if(o['service_type'] == 'Scan') scanRev += price;
     }
 
+    // If there are no orders, display a message instead of the charts
     if (orders.isEmpty) {
       return const SizedBox(height: 150, child: Center(child: Text("No data available yet.", style: TextStyle(color: Colors.grey))));
     }
 
+    // Build the UI with two side-by-side pie charts: one for service volume and one for revenue distribution
     return Container(
       height: 250, 
       padding: const EdgeInsets.all(8.0),
@@ -976,9 +1007,11 @@ class QueuePieChart extends StatelessWidget {
               ],
             ),
           ),
-          
+
+          // Vertical divider between the two charts for better visual separation
           Container(width: 1, color: Colors.grey.shade300, margin: const EdgeInsets.symmetric(horizontal: 8)),
 
+          // Second chart for revenue distribution with similar structure to the first chart, but using revenue values instead of counts
           Expanded(
             child: Column(
               children: [
