@@ -190,7 +190,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isLoading = true;
 
   // Google Gemini API Key
-  final String apiKey = 'AIzaSyCqsb-PWeSavD2XW1yGzSvxMrhO_yCOK-c';
+  final String apiKey = '';
 
   @override
   void initState() {
