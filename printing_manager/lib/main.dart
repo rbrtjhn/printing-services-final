@@ -375,6 +375,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Update payment status function
+  Future<void> updatePaymentStatus(String orderId, String newStatus) async {
+  final url = Uri.parse('http://localhost/printing-services-final/printing_api/update_payment.php'); 
+  
+  try {
+    final response = await http.post(url, body: {
+      'order_id': orderId,
+      'payment_status': newStatus,
+    });
+
+    if (response.statusCode == 200) {
+      fetchOrders(); 
+      _showToast('Payment status updated', Colors.blueGrey[800]!, Icons.info_outline);
+    }
+  } catch (e) {
+    print("Error updating payment: $e");
+  }
+}
+
   // Helper functions for status colors
   Color _getStatusBgColor(String status) {
     switch (status) {
@@ -790,6 +809,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         DataColumn(label: SizedBox(width: 60, child: Center(child: Text('Pages')))),
                                         DataColumn(label: Text('Total')),
                                         DataColumn(label: SizedBox(width: 105, child: Center(child: Text('Status')))),
+                                        DataColumn(label: Expanded(child: Text('Payment', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)))),
                                         DataColumn(label: SizedBox(width: 100, child: Center(child: Text('Actions')))),
                                       ],
                                       rows: orders.map<DataRow>((order) {
@@ -831,16 +851,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                         fontWeight: FontWeight.bold,
                                                         fontSize: 12 
                                                       ),
-                                                      items: <String>['Pending', 'Printing', 'Done'].map<DropdownMenuItem<String>>((String value) {
+                                                      items: ['Pending', 'Printing', 'Done'].map((String value) {
                                                         return DropdownMenuItem<String>(
-                                                          value: value, 
-                                                          child: Center(child: Text(value, style: TextStyle(color: Colors.blueGrey[900], fontWeight: FontWeight.normal)))
+                                                          value: value,
+                                                          alignment: Alignment.center,
+                                                          child: Text(
+                                                            value,
+                                                            style: TextStyle(
+                                                              fontSize: 14, 
+                                                              fontWeight: FontWeight.bold,
+                                                              color: Colors.black87,
+                                                            ),
+                                                          ),
                                                         );
                                                       }).toList(),
                                                       onChanged: (String? newValue) {
                                                         if (newValue != null) updateOrderStatus(order, newValue); 
                                                       },
                                                     ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          // Payment status
+                                          DataCell(
+                                            Center( 
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: order['payment_status'] == 'Paid' ? Colors.green.shade100 : Colors.red.shade100,
+                                                  borderRadius: BorderRadius.circular(20),
+                                                ),
+                                                child: DropdownButtonHideUnderline(
+                                                  child: DropdownButton<String>(
+                                                    value: order['payment_status'] ?? 'Unpaid', 
+                                                    isDense: true,
+                                                    alignment: Alignment.center, 
+                                                    icon: Icon(
+                                                      Icons.arrow_drop_down, 
+                                                      color: order['payment_status'] == 'Paid' ? Colors.green.shade800 : Colors.red.shade800
+                                                    ),
+                                                    items: ['Paid', 'Unpaid'].map((String value) {
+                                                      return DropdownMenuItem<String>(
+                                                        value: value,
+                                                        alignment: Alignment.center, 
+                                                        child: Text(
+                                                          value,
+                                                          style: TextStyle(
+                                                            fontSize: 14, 
+                                                            fontWeight: FontWeight.bold,  
+                                                            color: Colors.black87,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }).toList(),
+                                                    onChanged: (newValue) {
+                                                      if (newValue != null && newValue != order['payment_status']) {
+                                                        updatePaymentStatus(order['order_id'].toString(), newValue);
+                                                      }
+                                                    },
                                                   ),
                                                 ),
                                               ),
