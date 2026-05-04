@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 29, 2026 at 07:40 AM
+-- Generation Time: May 04, 2026 at 05:28 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,11 +47,11 @@ CREATE TABLE `tbl_orders` (
 --
 
 INSERT INTO `tbl_orders` (`order_id`, `customer_name`, `service_type`, `document_type`, `page_count`, `color_type`, `total_price`, `order_status`, `order_date`, `phone_number`, `status`, `payment_status`) VALUES
-(23, 'Alden', 'Xerox', 'ID', 3, 'Black & White', 6.00, 'Done', '2026-04-20 02:09:55', '', 'Pending', 'Unpaid'),
-(31, 'Rose', 'Xerox', 'Receipt', 1, 'Black & White', 2.00, 'Printing', '2026-04-26 04:47:10', NULL, 'Pending', 'Unpaid'),
-(33, 'Joseph', 'Scan', 'DFA', 4, 'Colored', 20.00, 'Done', '2026-04-29 03:04:05', NULL, 'Pending', 'Unpaid'),
-(35, 'Gloria', 'Xerox', 'Senior ID', 3, 'Black & White', 6.00, 'Printing', '2026-04-29 04:12:04', NULL, 'Pending', 'Unpaid'),
-(36, 'Beth', 'Print Text', 'Reflection', 7, 'Black & White', 21.00, 'Pending', '2026-04-29 04:26:31', NULL, 'Pending', 'Unpaid');
+(23, 'Alden', 'Xerox', 'ID', 3, 'Black & White', 6.00, 'Done', '2026-04-20 02:09:55', '', 'Pending', 'Paid'),
+(31, 'Rose', 'Xerox', 'Receipt', 1, 'Black & White', 2.00, 'Printing', '2026-04-26 04:47:10', NULL, 'Pending', 'Paid'),
+(38, 'Robert', 'Print Text', 'Lessons', 4, 'Black & White', 12.00, 'Pending', '2026-05-01 08:42:02', NULL, 'Pending', 'Paid'),
+(39, 'Joy', 'Print Text', 'DFA Form', 4, 'Black & White', 12.00, 'Done', '2026-05-04 03:27:16', NULL, 'Pending', 'Paid'),
+(40, 'Beth', 'Print Text', 'Reflection', 6, 'Black & White', 18.00, 'Pending', '2026-05-04 03:28:01', NULL, 'Pending', 'Unpaid');
 
 -- --------------------------------------------------------
 
@@ -96,7 +96,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `tbl_orders`
 --
 ALTER TABLE `tbl_orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `users`
